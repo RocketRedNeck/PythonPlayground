@@ -6,7 +6,7 @@ tau demonstrates plotting of time constant with numpy and matplotlib
 import matplotlib.pyplot as plot
 import numpy as np
 
-t = np.arange(0.0, 1.0, 0.01)   # start, stop, step
+ts = np.arange(0.0, 1.0, 0.01)   # start, stop, step
 
 def f(t, tau, delay):
     """
@@ -20,8 +20,9 @@ def f(t, tau, delay):
     
 plot.figure(1)
 plot.cla()
-taus = np.arange(0.01,1.0,0.01)
+plot.grid()
+taus = np.arange(0.0,1.0,0.05)
 for tau in taus:
-    plot.plot(t,f(t,tau, 0.2))
+    plot.plot(ts,f(ts,tau, 0.0))
 
 
