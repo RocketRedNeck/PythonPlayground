@@ -8,7 +8,7 @@ Created on Tue Sep 20 21:57:29 2016
 import matplotlib.pyplot as plot
 import numpy as np
 
-tmax = 300
+tmax = 1000
 ts = np.arange(0, tmax, 1)
 pvs = np.zeros(tmax)
 
@@ -19,7 +19,7 @@ kd = 0.0
 
 dt = ts[1] - ts[0]
 
-Gp = 1.0
+Gp = 1
 delay = 4 * dt
 tau = 10 * dt
  
