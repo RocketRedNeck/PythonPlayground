@@ -6,15 +6,12 @@ This is a temporary script file.
 """
 
 import time
-import tkinter as tk
 
 import llap
 import serial
 
 import serialPorts
 
-# A window interface to use later
-win = tk.Tk()
     
 print("The time is " + time.asctime(time.localtime()))
 
@@ -22,7 +19,7 @@ print(serialPorts.listPorts())
     
 print("Waiting for device...")
 
-devicePort = '/dev/tty.usbmodem14341'
+devicePort = 'COM3'
 device = []
 
 # Wait until we see that the port path is available

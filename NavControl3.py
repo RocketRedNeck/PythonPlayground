@@ -7,9 +7,6 @@ Created on Sat May 28 08:53:18 2016
 
 import sys
 
-#from pyglet.gl import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
 
 import PyQt4.QtCore as QtCore
 import PyQt4.QtGui as QtGui
@@ -129,14 +126,14 @@ class NavigationThread(QtCore.QThread):
         
         while (connected and (self.on == True)):
             try:
-                message, deviceId = self.device.get()
+                message, deviceId = self.device.get(timeout_sec = 0.100)
                 if (deviceId == 'PP'):
                     c = message[4:].split(',',13);
                     
                     self.navigator.updateImu(c)
                     
 
-                if (time.time() > nextUpdateTime):                
+                if (time.time() >= nextUpdateTime):                
                     
                     self.displayMessage(message, deviceId)
                     
@@ -145,9 +142,7 @@ class NavigationThread(QtCore.QThread):
                     pitch   = "{:.1f}".format(self.navigator.pitch * 180/pi)
                     yaw     = "{:.1f}".format(self.navigator.yaw * 180/pi)
 
-                    self.displayMessage("HEADING = " + heading + "  (" + roll + ", " + pitch + ", " + yaw + ")")
-                    
-                    self.form.quad.updateGL()                   
+                    self.displayMessage("HEADING = " + heading + "  (" + roll + ", " + pitch + ", " + yaw + ")")                  
                     
                     nextUpdateTime += updateDelta
                     
@@ -301,223 +296,9 @@ class Navigator():
         
         self.heading = -psi / dtr
         
-        if (self.form != None):
-            self.form.quad.roll  = self.roll
-            self.form.quad.pitch = self.pitch
-            self.form.quad.yaw   = pi + self.yaw
                 
            
-class QuadWidget(QtOpenGL.QGLWidget):
-    def __init__(self, parent):
-        QtOpenGL.QGLWidget.__init__(self, parent)
-        self.setMinimumSize(640/2, 480/2)
-        
-        # Quad size
-        self.height = 0.2
-        self.width  = 1
-        self.length = 2
-        
-        self.vx = self.length/2
-        self.vy = self.height/8
-        self.vz = self.width/2
-        
-        # Quad 3D rotation
-        self.roll  = 0.0
-        self.pitch = 0.0
-        self.yaw   = 0.0
-        
-        self.xRotation = 0
-        self.yRotation = 0
-        self.zRotation = 0
-        
-        self.axDir = 0
-        self.ayDir = 1
-        self.azDir = 0
-        
-        self.mxDir = 0
-        self.myDir = 0
-        self.mzDir = 1
-        
-        self.heading = 0.0
-        
-    def paintGL(self):
-        
-        #while (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE):
-            #print("Frame Buffer NOT Complete")
-            
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        # NOTES ON COMMENTED OUT CODE
-        # Original code was an example of how to get the
-        # matrix of a specific look-at by pushing the current
-        # stack, resetting the matrix to the identity matrix (1s on diag)
-        # and then retriving and inverting the matrix and applying
-        # it to the current matrix (matrix multiply)
-        # In the end all of that is unecessary for our application
-        # because only the look-at is needed (see the code below)
-        
-        #glPushMatrix()   # store the current MV matrix
-        #glLoadIdentity() # clear current MV matrix
-        #gluLookAt(0,0,0, self.xDir, self.yDir, self.zDir, 0, -1, 0)
-        #mvm = (GLfloat * 16)()
-        #glGetFloatv(GL_MODELVIEW_MATRIX, mvm)
-        #m = numpy.linalg.inv(numpy.reshape(mvm, [4, 4],'C'))
-        #m = numpy.reshape(m, [16], 'C')
-        #m = (ctypes.c_float * len(m))(*m.tolist())
-        #glPopMatrix();
-
-
-        # Push Matrix onto stack
-        glPushMatrix()
-               
-        glTranslatef(0.0, 0.0, 0.0)     # Origin where we want the object rotated
-
-        rtd = 180 / pi
-        glRotatef(self.yaw * rtd,   0, 1, 0)  # about screen y (y point up)
-        glRotatef(self.pitch * rtd, 0, 0, 1)  # about screen z (z out of screen)
-        glRotatef(self.roll * rtd,  1, 0, 0)  # about screen x (x points right)
-        
-        # Compute the orientation matrix directly
-        # openGL uses a 4x4 matrix to store (rotation) orientation, translation
-        # and scaling. The 3x3 rotation matrix is inside the 4x4
-
-#        sroll = sin(self.roll)
-#        croll = cos(self.roll)
-#        spitch = sin(self.pitch)
-#        cpitch = cos(self.pitch)
-#        syaw = sin(self.yaw)
-#        cyaw = cos(self.yaw)
-#        
-#        m = (ctypes.c_float * 16)()
-#        m[0] = cpitch * cyaw
-#        m[1] = spitch * cyaw
-#        m[2] = -syaw
-#        m[3] = 0;
-#        
-#        m[4] = cpitch * syaw * sroll - spitch * croll
-#        m[5] = cpitch * croll + spitch * syaw * sroll
-#        m[6] = cyaw * sroll
-#        m[7] = 0;
-#        
-#        m[8] = cpitch * syaw * croll + spitch * croll
-#        m[9] = spitch * syaw * croll - cpitch * sroll
-#        m[10] = cyaw * sroll;
-#        m[11] = 0;
-#        
-#        m[12] = 0;  # No translation
-#        m[13] = 0; 
-#        m[14] = 0; 
-#        m[15] = 1;
-#        
-#        glMultMatrixf(m)        
-                
-        # Make the object look-at a specific point from the origin
-        # Here we define "up" as "down" (-1) via the screen y-axis
-        # We define the look-at point with the heading
-        
-        #gluLookAt(0,0,0, self.mxDir, self.myDir, self.mzDir, self.axDir, self.ayDir, self.azDir)
-
-        # See NOTES ON COMMENTED OUT CODE, above                        
-        #glMultMatrixf(m)
-               
-     
-        # Draw the positive side of the lines x,y,z
-        glBegin(GL_LINES)
-        glColor3f (0.0, 1.0, 0.0) # Green for x axis
-        glVertex3f(0,0,0)
-        glVertex3f(self.vx + 0.5,0,0);
-        glColor3f(1.0,0.0,0.0) # Red for y axis
-        glVertex3f(0,0,0)
-        glVertex3f(0,self.vy + 0.5,0)
-        glColor3f(0.0,0.0,1.0) # Blue for z axis
-        glVertex3f(0,0,0)
-        glVertex3f(0,0,self.vz + 0.5)
-        glEnd()
-     
-        # Draw the six sides of the block
-        glBegin(GL_QUADS)
-     
-        # right/left
-        # Magenta
-        glColor3ub(255, 0, 255)
-        glVertex3f(self.vx, self.vy, self.vz)
-        glVertex3f(self.vx, self.vy,-self.vz)
-        glVertex3f(self.vx,-self.vy,-self.vz)
-        glVertex3f(self.vx,-self.vy, self.vz)
-    
-        # Blue
-        glColor3f(0, 0, 255)
-        glVertex3f(-self.vx,-self.vy, self.vz)
-        glVertex3f(-self.vx, self.vy, self.vz)
-        glVertex3f(-self.vx, self.vy,-self.vz)
-        glVertex3f(-self.vx,-self.vy,-self.vz)
-     
-        # front/back
-         # Yellow
-        glColor3ub(255, 255, 0)
-        glVertex3f( self.vx,  self.vy, self.vz)
-        glVertex3f(-self.vx,  self.vy, self.vz)
-        glVertex3f(-self.vx, -self.vy, self.vz)
-        glVertex3f( self.vx, -self.vy, self.vz)
-     
-        # Cyan
-        glColor3ub( 0, 255, 255)
-        glVertex3f(-self.vx,-self.vy,-self.vz)
-        glVertex3f( self.vx,-self.vy,-self.vz)
-        glVertex3f( self.vx, self.vy,-self.vz)
-        glVertex3f(-self.vx, self.vy,-self.vz)
-     
-        # top/bottom
-        # Green
-        glColor3ub(0, 255, 0)
-        glVertex3f( self.vx, self.vy, self.vz)
-        glVertex3f(-self.vx, self.vy, self.vz)
-        glVertex3f(-self.vx, self.vy,-self.vz)
-        glVertex3f( self.vx, self.vy,-self.vz)
-       
-        # Red
-        glColor3ub(255, 0, 0)
-        glVertex3f(-self.vx,-self.vy,-self.vz)
-        glVertex3f( self.vx,-self.vy,-self.vz)
-        glVertex3f( self.vx,-self.vy, self.vz)
-        glVertex3f(-self.vx,-self.vy, self.vz)
-       
-    
-        glEnd()
-        
-        glFlush()
-    
-        # Pop Matrix off stack
-        glPopMatrix()
-
-    def resizeGL(self, width, height):
-        # set the Viewport
-        glViewport(0, 0, width, height)
-
-        # using Projection mode
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-
-        aspectRatio = width / height
-        gluPerspective(45.0, aspectRatio, 0.1, 100.0)
-
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        glTranslatef(0.0, 0.0, -3.0) # Back off so we can see the object
-
-    def initializeGL(self):
-        glClearColor(0, 0, 0, 1)
-        glClearDepth(1.0)              
-        glDepthFunc(GL_LESS)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH)
-
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()                    
-        gluPerspective(45.0,1.33,0.1, 100.0) 
-        
-        glMatrixMode(GL_MODELVIEW)
-        glTranslatef(0.0, 0.0, -3.0)    # Back off so we can see the object
         
                    
 class NavForm(QtGui.QWidget):
@@ -527,7 +308,7 @@ class NavForm(QtGui.QWidget):
       self.navigator = None
       
       self.resize(500, 750)
-      self.move(1500, 300)
+      self.move(1400, 300)
       self.setWindowTitle('Navigation Control')
             
       self.onOffButton = QtGui.QPushButton(self)
@@ -563,9 +344,7 @@ class NavForm(QtGui.QWidget):
           self.statusText[i].setText("")
           
       self.statusText[0].setText("OFF")
-      
-      self.quad = QuadWidget(self)
-      self.quad.move(75,300)
+
       			
 #   def whichbtn(self,b):
 #      print("clicked button is "+b.text())

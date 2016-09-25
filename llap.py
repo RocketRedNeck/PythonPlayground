@@ -5,7 +5,7 @@ Created on Wed May 25 15:37:43 2016
 @author: mtkessel
 """
 
-import queue
+import queue as Q
 import serial
 import threading
 import time
@@ -38,7 +38,7 @@ class LLAP(serial.Serial):
         self.__messageReceived = False
         self.__deviceId = deviceId[:2]
         self.__thread = []
-        self.__queue = queue.Queue(1000)
+        self.__queue = Q.Queue(1000)
         
         serial.Serial.__init__(self,*args,**kwargs)
         if (self.timeout == None):
@@ -103,8 +103,10 @@ class LLAP(serial.Serial):
                     
                     if (self.__queue.full() == True):
                         self.__queue.get()  # pop oldest item off first
-                        
-                    self.__queue.put(c.decode("utf-8"))
+                    
+                    m = c.decode("utf-8")
+                    print(m)
+                    self.__queue.put(m)
                     
                 elif (d == 'n'):
                     # Found an Extended message, read it until the requisite EOF/EOL signal 
@@ -121,7 +123,9 @@ class LLAP(serial.Serial):
                         if (self.__queue.full() == True):
                             self.__queue.get()  # pop oldest item off first
                             
-                        self.__queue.put(c.decode("utf-8"))
+                        m = c.decode("utf-8")
+                        print(m)
+                        self.__queue.put(m)
                 else:
                     # We are out of sync with the message header
                     # or we timed out, just move on
@@ -144,7 +148,7 @@ class LLAP(serial.Serial):
             c = self.__queue.get(block = block, timeout = timeout_sec)
             deviceId = c[0:2]
             message = c[2:]
-        except (queue.Empty):
+        except (Q.Empty):
             pass
         
         return message, deviceId
@@ -203,11 +207,11 @@ class LLAP(serial.Serial):
         if (message != None):
             if (self.__deviceName != None):
                 if (deviceId != None):
-                    print(self.__deviceName + " (" + deviceId[:2] + ") said '" + message + "'")
+                    print(self.__deviceName + " (" + deviceId[:2] + ") " + message)
                 else:
-                    print(self.__deviceName + " (NOID) said '" + message + "'")
+                    print(self.__deviceName + " (NOID) " + message)
             else:
-                print("Device said '" + message + "'")
+                print(message)
                 
         
     def changeDeviceId(self,deviceId):
