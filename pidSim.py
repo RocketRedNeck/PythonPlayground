@@ -58,7 +58,7 @@ ns = range(0, nmax)
 
 
 kp = 0.3    # Proportional gain
-ki = 0.05    # Integral gain
+ki = 0.03    # Integral gain
 kd = 0.0    # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
@@ -327,10 +327,10 @@ plot.plot(ts_sec,err,label='err')
 #plot.plot(ts_sec,cvPid,label='cvPid')
 #plot.plot(ts_sec,cvComm0,'o',label='cvComm0')
 plot.plot(ts_sec,G,label='G')
-plot.plot(ts_sec,pvCam,label='Camera'),
-#plot.plot(ts_sec,pvComm1,'o',label='pvComm1')
-plot.plot(ts_sec,pvImage,label='ImageProcessing')
-plot.plot(ts_sec,pvComm2,label='Network Table')
+plot.plot(ts_sec,pvCam,label='CameraFrame'),
+plot.plot(ts_sec,pvComm1,label='CamComm+ImageProcessing')
+plot.plot(ts_sec,pvImage,label='NetworkTableStart')
+plot.plot(ts_sec,pvComm2,label='NetworkTableEnd')
 #plot.plot(ts_sec,pvFinal,label='pvFinal')
 #plot.legend()
 plot.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
