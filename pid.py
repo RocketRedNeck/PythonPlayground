@@ -13,14 +13,14 @@ ts = np.arange(0, tmax, 1)
 pvs = np.zeros(tmax)
 
 
-kp = 0.9
-ki = 0.1
+kp = 0.2
+ki = 0.01
 kd = 0.0  
 
 dt = ts[1] - ts[0]
 
-Gp = 1
-delay = 4 * dt
+Gp = 2
+delay = 50 * dt
 tau = 10 * dt
  
 

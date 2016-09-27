@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-pidSim.py
+pidSim2.py
 
 A simulation of a vision control to steering PID loop accounting for communication and
 processing latency and variation; demonstrates the impact of variation
-to successful control when the control variable (CV) has direct influence on
-the process variable (PV)
+to successful control.
+
+THIS VERSION models the control as a second order input (torque to acceleration)
+and then integrates twice to get position. The result is that derivative control
+will be required account for the integration lag. In other words, the control
+variable (CV) has indirect control over the process variable (PV)
 
 This allows students to experiment with how different elements in the scaling
 of a control loop affect performance, this focusing efforts on successful
@@ -58,9 +62,9 @@ nmax = ts_sec.__len__() # round(tmax_sec/dt_sec)
 ns = range(0, nmax)
 
 
-kp = 0.3    # Proportional gain
-ki = 0.03    # Integral gain
-kd = 0.0    # Derivative gain
+kp = 0.0    # Proportional gain
+ki = 0.0    # Integral gain
+kd = 0.4   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
 tau_sec   = 0.1
@@ -77,6 +81,19 @@ lastErr = 0.0
 G = np.zeros(nmax)     # Process output to be measured
 
 exp = np.exp(-dt_sec/tau_sec)
+
+# Define a mass property for scaling later
+# in this case we just use a scalar to represent either linear or rotation
+m = 1
+
+# Define arrays to hold the kinematic values
+# In this case we will use simple names to represent either linear or rotation
+a = np.zeros(nmax)     # linear or angular acceleration
+v = np.zeros(nmax)     # linear or angular velocity
+p = np.zeros(nmax)     # linear or angular position
+
+
+
 
 # Model of the pid task via a java util.timer
 # We add a random normal variation for task wakeup since the util.timer
@@ -255,10 +272,32 @@ for n in ns:
         
     # Currently just model the motor, gears, and kinematics as a simple
     # time constant without limits
-    # We will likely improve this fidelity later by adding limiting
     # The kinematics (physics) runs "continuously" so we update it
     # every time step
+    
+    # First, model a simple time constant representing motor torque (moment, M)
     G[n] = (kg * cvComm0[n] * (1.0 - exp)) + (G[n-1] * exp)
+    
+    # Torque applied to the robot mass induced motion
+    # We don't yet care about the specific (how much mass nor whether the
+    # motion is linear or rotational); in this case all we want to demonstrate
+    # is the process effects of integrating from force to a position representing
+    # the process variable being compared to the set point
+    #
+    # The form is F = m a or M = I alpha, but we will just use simple names
+    # here
+    a[n] = G[n] / m
+    
+    # Integrate to a velocity
+    # Here will use a simple trapezoidal rule; we can upgrade this to Runge-Kutta
+    # or other methods later but if our time step is small enough compared to
+    # the rate of change, then trapezoidal is fine
+    if (n > 0):
+        v[n] = v[n-1] + a[n-1]*dt_sec + (a[n] - a[n-1])*dt_sec/2
+
+    # Integrate to a position
+    if (n > 0):
+        p[n] = p[n-1] + v[n-1]*dt_sec + (v[n] + v[n-1])*dt_sec/2
     
     # Next is the sensor delay, communication, processing, and communication
     # on the return path
@@ -290,7 +329,7 @@ for n in ns:
     # entire frame is ready for the next communication boundary (when the frame
     # can be fetched)
     if (n == (camEnd_index-1)):
-        pvCam[camStart_index:camEnd_index] = G[camImage_index]
+        pvCam[camStart_index:camEnd_index] = p[camImage_index]
         #print("@ " + str(n) + " camera = " + str(G[camImage_index]))
     
     # Image processing is assumed to operate as fast as it can
@@ -384,7 +423,8 @@ plot.plot(ts_sec,sp,label='sp')
 plot.plot(ts_sec,err,label='err')
 #plot.plot(ts_sec,cvPid,label='cvPid')
 #plot.plot(ts_sec,cvComm0,'o',label='cvComm0')
-plot.plot(ts_sec,G,label='G')
+#plot.plot(ts_sec,G,label='G')
+plot.plot(ts_sec,p,label='p')
 plot.plot(ts_sec,pvCam,label='CameraFrame'),
 plot.plot(ts_sec,pvComm1,label='CamComm+ImageProcessing')
 plot.plot(ts_sec,pvImage,label='NetworkTableStart')
