@@ -77,23 +77,53 @@ G = np.zeros(nmax)     # Process output to be measured
 
 exp = np.exp(-dt_sec/tau_sec)
 
+# Model of the pid task via a java util.timer
+# We add a random normal variation for task wakeup since the util.timer
+# can only assure that the task wakes up no earlier than scheduled.
+# Empirical measurement of the task latency is required for accurate
+# modeling, but for now we can just assume about a 10% average
 pidPeriod_sec    = 0.02;
 pidPeriod_index  = round(pidPeriod_sec / dt_sec)
 pidStart_index   = 0        # "time" that PID computation started
 pidDuration_sec  = 0.001    # Time to complete PID calculation (models software latency)
 pidDuration_index = round(pidDuration_sec / dt_sec)
 pidEnd_index      = pidStart_index + pidDuration_index    # "time" that PID computation ended
-pidJitter_sec    = 0.0  # Later we will add a "random" jitter that delays the PID task
-pidJitter_index  = round(pidJitter_sec / dt_sec)
+pidMinJitter_sec    = 0.000   # Minimum Random task jitter
+pidMinJitter_index  = round(pidMinJitter_sec / dt_sec)
+pidMaxJitter_sec    = 0.000   # Maximum Random task jitter
+pidMaxJitter_index  = round(pidMaxJitter_sec / dt_sec)
+pidMeanJitter_index = round((pidMaxJitter_index + pidMinJitter_index)/2)
+pidStdDevJitter_index = round((pidMaxJitter_index - pidMinJitter_index) / 3)
+
 
 cvPid   = np.zeros(nmax)  # Initial value of cv coming from PID calculation
 
+# The first communication link is assumed to be a CAN bus
+# The bus overhead is assumed to be a total fixed time
+# not exceeding about 1 ms for up to four (4) messages going to four (4)
+# separate motors (including any increases for bit stuffing); in other words
+# we assume something like 100 bits per message all mastered from the same
+# location on a 1 Mbps bus.
+# The underlying software is assumed to be some queue processing task that
+# wakes upon a posted message. A complete review of the path is needed to
+# assess whether to task that actually receives the posted message awakens
+# immediately (higher priority) or must time slice with all other concurrent
+# tasks. If communication tasking is forced to wait for an available cycle
+# it is possible that an indeterminate delay may occur at the post-to-wire
+# boundary; also, the communication tasking must post all messages queued
+# to the wire in close sequence otherwise the motors will be out of phase
+# We can inject an estimate of communication jitter as a whole using a
+# simple normal distribution
 comm0Start_index = 0         # "time" that first communication bus starts
 comm0Delay_sec   = 0.001     # Time to complete communication (MUST BE LESS THAN PID PERIOD)
 comm0Delay_index = round(comm0Delay_sec / dt_sec)
 comm0End_index   = comm0Start_index + comm0Delay_index
-comm0Jitter_sec  = 0.0  # Later we will add a "random" jitter that delays communication
-comm0Jitter_index = round(comm0Jitter_sec / dt_sec)
+comm0MinJitter_sec  = 0.000 
+comm0MinJitter_index = round(comm0MinJitter_sec / dt_sec)
+comm0MaxJitter_sec  = 0.000
+comm0MaxJitter_index = round(comm0MaxJitter_sec / dt_sec)
+comm0MeanJitter_index = round((comm0MaxJitter_index + comm0MinJitter_index)/2)
+comm0StdDevJitter_index = round((comm0MaxJitter_index - comm0MinJitter_index) / 3)
 
 cvComm0 = np.zeros(nmax)  # cv value delayed for first communication bus
 
@@ -116,9 +146,13 @@ comm1Start_index = 0         # "time" that second communication bus starts
 comm1Delay_sec   = 0.020     # Time to complete communication
 comm1Delay_index = round(comm1Delay_sec / dt_sec)
 comm1End_index   = comm1Start_index + comm1Delay_index
-comm1Jitter_sec  = 0.0  # Later we will add a "random" jitter that delays communication
-comm1Jitter_index = round(comm1Jitter_sec / dt_sec)
-
+comm1MinJitter_sec  = 0.000 
+comm1MinJitter_index = round(comm1MinJitter_sec / dt_sec)
+comm1MaxJitter_sec  = 0.000 
+comm1MaxJitter_index = round(comm1MaxJitter_sec / dt_sec)
+comm1MeanJitter_index = round((comm1MaxJitter_index + comm1MinJitter_index)/2)
+comm1StdDevJitter_index = round((comm1MaxJitter_index - comm1MinJitter_index) / 3)
+    
 pvComm1 = np.zeros(nmax)  # pv value delayed for second communication bus
 
 # Image processing consists of a bounded, but variable process
@@ -136,6 +170,7 @@ pvImageMaxDuration_index = round(pvImageMaxDuration_sec / dt_sec)
 pvImageMinDuration_index = round(pvImageMinDuration_sec / dt_sec)
 pvImageMeanDuration_index = round((pvImageMinDuration_index + pvImageMaxDuration_index)/2)
 pvImageStdDevDuration_index = round((pvImageMaxDuration_index - pvImageMinDuration_index) / pvImageRateSigma)
+    
 pvImageEnd_index = pvImageStart_index + 2*pvImageMaxDuration_index
 
 pvImage = np.zeros(nmax)
@@ -161,6 +196,11 @@ for n in ns:
     # representing a late task start (independent of measurement jitter)
     # We assume here that the task is delayed and not immediately preempted
     # and thus able to make full use of its time slice
+    if (pidStdDevJitter_index == 0):
+        pidJitter_index = 0
+    else:
+        pidJitter_index = round(np.random.normal(pidMeanJitter_index, pidStdDevJitter_index))
+        
     if ((n % (pidPeriod_index + pidJitter_index)) == 0):
         #print("@ " + str(n) + " pid start")
         pidStart_index = n
@@ -198,6 +238,11 @@ for n in ns:
     if (n == pidEnd_index):
         #print("@ " + str(n) + " pid end = " + str(cvPid[n]))
         comm0Start_index = n
+        if (comm0StdDevJitter_index == 0):
+            comm0Jitter_index = 0
+        else:
+            comm0Jitter_index = round(np.random.normal(comm0MeanJitter_index, comm0StdDevJitter_index))
+        
         comm0End_index = comm0Start_index + comm0Delay_index + comm0Jitter_index
         
     # When communication delay has been met, move the information along
@@ -257,7 +302,12 @@ for n in ns:
     
     if (n == comm1Start_index):
         #print("@ " + str(n) + " COMM1 start")
-        comm1End_index = comm1Start_index + comm1Delay_index
+        if (comm1StdDevJitter_index == 0):
+            comm1Jitter_index = 0
+        else:
+            comm1Jitter_index = round(np.random.normal(comm1MeanJitter_index, comm1StdDevJitter_index))
+            
+        comm1End_index = comm1Start_index + comm1Delay_index + comm1Jitter_index
     
     # Whichever image frame is available will now be forwarded
     # We back up one camera period from when communication startsbecause the
@@ -280,7 +330,14 @@ for n in ns:
         # of actual image processing, but rather just enough variation
         # to observe the impact to a control loop (if any)
         pvImageStart_index = comm1End_index
-        pvImageEnd_index = pvImageStart_index + round(np.random.normal(pvImageMeanDuration_index, pvImageStdDevDuration_index))
+
+        if (pvImageStdDevDuration_index == 0):
+            pvImageJitter_index = pvImageMeanDuration_index
+        else:
+            pvImageJitter_index = round(np.random.normal(pvImageMeanDuration_index, pvImageStdDevDuration_index))
+        
+        
+        pvImageEnd_index = pvImageStart_index + pvImageJitter_index
         
     elif (n > 0):
         pvComm1[n] = pvComm1[n-1]
