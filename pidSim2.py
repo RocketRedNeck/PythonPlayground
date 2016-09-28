@@ -6,7 +6,7 @@ A simulation of a vision control to steering PID loop accounting for communicati
 processing latency and variation; demonstrates the impact of variation
 to successful control.
 
-THIS VERSION models the control as a second order input (torque to acceleration)
+THIS VERSION models the control as a 1st order input (velocity)
 and then integrates once to get position. In other words, the control
 variable (CV) has indirect control over the process variable (PV)
 
@@ -62,11 +62,11 @@ ns = range(0, nmax)
 
 
 kp = 0.5    # Proportional gain
-ki = 0    # Integral gain
-kd = 0.1   # Derivative gain
+ki = 0.0    # Integral gain
+kd = 0.3   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
-tau_sec   = 0.1
+tau_sec   = 0.5
  
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
