@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pidSim2.py
+pidSim3.py
 
 A simulation of a vision control to steering PID loop accounting for communication and
 processing latency and variation; demonstrates the impact of variation
@@ -9,7 +9,10 @@ to successful control.
 THIS VERSION models the control as a second order input (torque to acceleration)
 and then integrates twice to get position. The result is that derivative control
 will be required account for the integration lag. In other words, the control
-variable (CV) has indirect control over the process variable (PV)
+variable (CV) has indirect control over the process variable (PV) and motor speed
+control is handled by this loop. If the motor speed is controlled via a separate
+motor controller then the implicit cascaded PID of that controller is demonstrated
+by pidSim2.
 
 This allows students to experiment with how different elements in the scaling
 of a control loop affect performance, this focusing efforts on successful
@@ -62,12 +65,12 @@ nmax = ts_sec.__len__() # round(tmax_sec/dt_sec)
 ns = range(0, nmax)
 
 
-kp = 0.0    # Proportional gain
+kp = 0.00    # Proportional gain
 ki = 0.0    # Integral gain
-kd = 0.4   # Derivative gain
+kd = 0.8   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
-tau_sec   = 0.1
+tau_sec   = 0.00000001  # Assume motor torque response is nearly instantaneous
  
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
@@ -179,8 +182,8 @@ pvComm1 = np.zeros(nmax)  # pv value delayed for second communication bus
 # approach and will assume the variation has a normal distribution with a
 # 3-sigma distribution between the upper and lower limits
 pvImageStart_index = 0
-pvImageMaxRate_Hz = 5.0
-pvImageMinRate_Hz = 3.0
+pvImageMaxRate_Hz = 12.0
+pvImageMinRate_Hz = 8.0
 pvImageRateSigma = 3
 pvImageMaxDuration_sec = 1.0 / pvImageMinRate_Hz
 pvImageMinDuration_sec = 1.0 / pvImageMaxRate_Hz

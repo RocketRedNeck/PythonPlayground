@@ -8,7 +8,9 @@ to successful control.
 
 THIS VERSION models the control as a 1st order input (velocity)
 and then integrates once to get position. In other words, the control
-variable (CV) has indirect control over the process variable (PV)
+variable (CV) has indirect control over the process variable (PV); for example
+this is the case when a motor controller is in the loop and effectively makes
+this loop a cascaded PID
 
 This allows students to experiment with how different elements in the scaling
 of a control loop affect performance, this focusing efforts on successful
@@ -66,7 +68,7 @@ ki = 0.0    # Integral gain
 kd = 0.3   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
-tau_sec   = 0.5
+tau_sec   = 0.5     # This is the motor plus inertia time constant to reach velocity
  
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
