@@ -56,7 +56,7 @@ SOFTWARE.
 import matplotlib.pyplot as plot
 import numpy as np
 
-tmax_sec = 5.0
+tmax_sec = 10.0
 dt_sec = 0.001
 ts_sec = np.arange(0.0, tmax_sec, 0.001)
 nmax = ts_sec.__len__() # round(tmax_sec/dt_sec)
@@ -66,12 +66,14 @@ ns = range(0, nmax)
 kp = 0.5    # Proportional gain
 ki = 0.0    # Integral gain
 kd = 0.3   # Derivative gain
-kg = 1.0    # Plant (Process) gain
+kg = 1.2    # Plant (Process) gain
 
 tau_sec   = 0.5     # This is the motor plus inertia time constant to reach velocity
  
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
+spStart = False;
+
 err = np.zeros(nmax)
 intErr = np.zeros(nmax)
 derrdt = np.zeros(nmax)
@@ -396,16 +398,17 @@ for n in ns:
         comm1Start_index = comm2End_index + 1    # Restart image processing immediately
 
         # Enforce causality
-        # We delay the awareness of the set point until after the first
-        # image is processed and communicated; it is only at that moment
-        # the system becomes aware of the error
-        if (n < nmax-1):
-            sp[n+1] = 1.0       
+        spStart = True;
+             
         
     elif (n > 0):
         pvComm2[n] = pvComm2[n-1]
-        if (n < nmax-1):
-            sp[n+1] = sp[n]
+
+    
+    if (spStart == True):
+        if ((n+1) < nmax):
+            sp[n+1] = np.sin(ts_sec[n+1])
+            sp[n+1] = sp[n+1]/np.abs(sp[n+1])
         
     pvFinal[n] = pvComm2[n]
     
