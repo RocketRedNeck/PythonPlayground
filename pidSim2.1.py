@@ -73,7 +73,7 @@ tau_sec   = 0.1     # This is the motor plus inertia time constant to reach velo
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
 spStart = False;
-spPeriod = 1.0/2.0
+spPeriod = 1.0/4.0
 
 err = np.zeros(nmax)
 intErr = np.zeros(nmax)
