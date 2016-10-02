@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pidSim2.py
+pidSim2.1.py
 
 A simulation of a vision control to steering PID loop accounting for communication and
 processing latency and variation; demonstrates the impact of variation
@@ -63,17 +63,17 @@ nmax = ts_sec.__len__() # round(tmax_sec/dt_sec)
 ns = range(0, nmax)
 
 
-kp = 0.8    # Proportional gain
+kp = 1.5    # Proportional gain
 ki = 0.0    # Integral gain
-kd = 0.4   # Derivative gain
+kd = 0.15   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
-tau_sec   = 0.5     # This is the motor plus inertia time constant to reach velocity
+tau_sec   = 0.1     # This is the motor plus inertia time constant to reach velocity
  
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
 spStart = False;
-spPeriod = 1.0/3.0
+spPeriod = 1.0/2.0
 
 err = np.zeros(nmax)
 intErr = np.zeros(nmax)
@@ -179,8 +179,8 @@ pvComm1 = np.zeros(nmax)  # pv value delayed for second communication bus
 # approach and will assume the variation has a normal distribution with a
 # 3-sigma distribution between the upper and lower limits
 pvImageStart_index = 0
-pvImageMaxRate_Hz = 5.0
-pvImageMinRate_Hz = 3.0
+pvImageMaxRate_Hz = 10.0
+pvImageMinRate_Hz = 8.0
 pvImageRateSigma = 3
 pvImageMaxDuration_sec = 1.0 / pvImageMinRate_Hz
 pvImageMinDuration_sec = 1.0 / pvImageMaxRate_Hz
