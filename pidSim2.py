@@ -172,6 +172,7 @@ comm1MeanJitter_index = round((comm1MaxJitter_index + comm1MinJitter_index)/2)
 comm1StdDevJitter_index = round((comm1MaxJitter_index - comm1MinJitter_index) / 3)
     
 pvComm1 = np.zeros(nmax)  # pv value delayed for second communication bus
+pvComm1StartTags = np.NaN * np.zeros(nmax)
 
 # Image processing consists of a bounded, but variable process
 # The content of the image and the operating environment will cause the 
@@ -354,9 +355,11 @@ for n in ns:
     # the boundaries aynchronous to the resolution of the time step.    
     if (n == comm1End_index):
         if (comm1Start_index >= camPeriod_index):
-            pvComm1[comm1End_index] = pvCam[comm1Start_index - camPeriod_index]
+            pvComm1StartTags[comm1Start_index] = pvCam[comm1Start_index - camPeriod_index]
+            pvComm1[comm1End_index] = pvComm1StartTags[comm1Start_index]
         else:
-            pvComm1[comm1End_index] = pvCam[comm1Start_index]
+            pvComm1StartTags[comm1Start_index] = pvCam[comm1Start_index]
+            pvComm1[comm1End_index] = pvComm1StartTags[comm1Start_index]
         
         #print("@ " + str(n) + " COMM1 end = " + str(pvComm1[comm1End_index]))
         # Now that communication has completed, the image processing
@@ -424,13 +427,15 @@ plot.plot(ts_sec,err,label='err')
 #plot.plot(ts_sec,G,label='G')
 plot.plot(ts_sec,p,label='p')
 plot.plot(ts_sec,pvCam,label='CameraFrame'),
-plot.plot(ts_sec,pvComm1,label='CamComm+ImageProcessing')
+plot.plot(ts_sec,pvComm1StartTags,'o',label='CamCommStart')
+plot.plot(ts_sec,pvComm1,label='ImageProcessing')
 plot.plot(ts_sec,pvImage,label='NetworkTableStart')
 plot.plot(ts_sec,pvComm2,label='NetworkTableEnd')
 #plot.plot(ts_sec,pvFinal,label='pvFinal')
-#plot.legend()
+#plot.legend(loc='best')
 plot.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
            ncol=2, mode="expand", borderaxespad=0.)
+#plot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
     
     
