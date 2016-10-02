@@ -63,9 +63,9 @@ nmax = ts_sec.__len__() # round(tmax_sec/dt_sec)
 ns = range(0, nmax)
 
 
-kp = 0.8    # Proportional gain
+kp = 1.2    # Proportional gain
 ki = 0.0    # Integral gain
-kd = 0.4   # Derivative gain
+kd = 0.5   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
 tau_sec   = 0.5     # This is the motor plus inertia time constant to reach velocity
@@ -102,6 +102,7 @@ p = np.zeros(nmax)     # linear or angular position
 # modeling, but for now we can just assume about a 10% average
 pidPeriod_sec    = 0.02;
 pidPeriod_index  = round(pidPeriod_sec / dt_sec)
+pidTimer_index   = 0
 pidStart_index   = 0        # "time" that PID computation started
 pidDuration_sec  = 0.001    # Time to complete PID calculation (models software latency)
 pidDuration_index = round(pidDuration_sec / dt_sec)
@@ -219,11 +220,22 @@ for n in ns:
         pidJitter_index = 0
     else:
         pidJitter_index = round(np.random.normal(pidMeanJitter_index, pidStdDevJitter_index))
+
+    if (pidJitter_index < 0):
+        pidJitter_index = 0
+
+    if (n == pidTimer_index):
+        lastPidStart_index = pidStart_index
+        pidStart_index = pidTimer_index + pidJitter_index
+        pidTimer_index += pidPeriod_index
         
-    if ((n % (pidPeriod_index + pidJitter_index)) == 0):
-        #print("@ " + str(n) + " pid start")
-        pidStart_index = n
-        pidEnd_index = pidStart_index + pidDuration_index
+    if (n == pidStart_index):
+
+        
+        deltaT = dt_sec * (pidStart_index - lastPidStart_index) # compute realized period this cycle
+        #print("@ " + str(n) + " pid start = (" + str(pidPeriod_index) + ", " + str(pidJitter_index) + ") + deltaT = " + str(deltaT))
+        
+        pidEnd_index = n + pidDuration_index
         
         # Once we get going, we can compute the error as the
         # difference of the setpoint and the latest output
@@ -237,6 +249,12 @@ for n in ns:
         # In this sense, the error rate is an average over the
         # previous interval of time since we last looked, thus the
         # error rate is in the past
+        #
+        # NOTE: Here we make an ASSUMPTION that the period is accurate
+        # even though we are jittering actual task start. This will cause
+        # rate of error to be, itself, in error; using this error rate with
+        # the additional uncertainty makes use of derivative gain problematic
+        # because of the apparent noise induced by the incorrect timing assumption
         derrdt[n] = (err[n] - err[n-1]) / pidPeriod_sec
         
         # Integrate the error (i.e., add it up)
@@ -276,7 +294,7 @@ for n in ns:
     # The kinematics (physics) runs "continuously" so we update it
     # every time step
     
-    # First, model a simple time constant representing motor torque (moment, M)
+    # First, model a simple time constant representing controlled process
     G[n] = (kg * cvComm0[n] * (1.0 - exp)) + (G[n-1] * exp)
     
     # Torque applied to the robot mass induced motion

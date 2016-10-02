@@ -65,10 +65,10 @@ ns = range(0, nmax)
 
 kp = 1.5    # Proportional gain
 ki = 0.0    # Integral gain
-kd = 0.15   # Derivative gain
+kd = 0.7   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
-tau_sec   = 0.1     # This is the motor plus inertia time constant to reach velocity
+tau_sec   = 0.5     # This is the motor plus inertia time constant to reach velocity
  
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
@@ -102,6 +102,7 @@ p = np.zeros(nmax)     # linear or angular position
 # modeling, but for now we can just assume about a 10% average
 pidPeriod_sec    = 0.02;
 pidPeriod_index  = round(pidPeriod_sec / dt_sec)
+pidTimer_index   = 0
 pidStart_index   = 0        # "time" that PID computation started
 pidDuration_sec  = 0.001    # Time to complete PID calculation (models software latency)
 pidDuration_index = round(pidDuration_sec / dt_sec)
@@ -180,8 +181,8 @@ pvComm1StartTags = np.NaN * np.zeros(nmax)
 # approach and will assume the variation has a normal distribution with a
 # 3-sigma distribution between the upper and lower limits
 pvImageStart_index = 0
-pvImageMaxRate_Hz = 10.0
-pvImageMinRate_Hz = 8.0
+pvImageMaxRate_Hz = 12.0
+pvImageMinRate_Hz = 9.0
 pvImageRateSigma = 3
 pvImageMaxDuration_sec = 1.0 / pvImageMinRate_Hz
 pvImageMinDuration_sec = 1.0 / pvImageMaxRate_Hz
@@ -219,11 +220,25 @@ for n in ns:
         pidJitter_index = 0
     else:
         pidJitter_index = round(np.random.normal(pidMeanJitter_index, pidStdDevJitter_index))
+
+    if (pidJitter_index < 0):
+        pidJitter_index = 0
+    
+    if (n == pidTimer_index):
+        lastPidStart_index = pidStart_index
+        pidStart_index = pidTimer_index + pidJitter_index
+        pidTimer_index += pidPeriod_index
         
-    if ((n % (pidPeriod_index + pidJitter_index)) == 0):
-        #print("@ " + str(n) + " pid start")
-        pidStart_index = n
-        pidEnd_index = pidStart_index + pidDuration_index
+    if (n == pidStart_index):
+
+        
+        deltaT = dt_sec * (pidStart_index - lastPidStart_index) # compute realized period this cycle
+        if (deltaT == 0.0):
+            deltaT = pidPeriod_sec
+            
+        #print("@ " + str(n) + " pid start = (" + str(pidPeriod_index) + ", " + str(pidJitter_index) + ") + deltaT = " + str(deltaT))
+        
+        pidEnd_index = n + pidDuration_index
         
         # Once we get going, we can compute the error as the
         # difference of the setpoint and the latest output
@@ -237,7 +252,12 @@ for n in ns:
         # In this sense, the error rate is an average over the
         # previous interval of time since we last looked, thus the
         # error rate is in the past
-        derrdt[n] = (err[n] - err[n-1]) / pidPeriod_sec
+        #
+        # NOTE: Here we remove the assumption that the period is accurate
+        # and instead ASSUME we can accurately measure the time between
+        # samples; conceivably this improves our estimate of the rate
+
+        derrdt[n] = (err[n] - err[n-1]) / deltaT
         
         # Integrate the error (i.e., add it up)
         intErr[n] = intErr[n-1] + err[n]
@@ -276,7 +296,7 @@ for n in ns:
     # The kinematics (physics) runs "continuously" so we update it
     # every time step
     
-    # First, model a simple time constant representing motor torque (moment, M)
+    # First, model a simple time constant representing controlled process
     G[n] = (kg * cvComm0[n] * (1.0 - exp)) + (G[n-1] * exp)
     
     # Torque applied to the robot mass induced motion
