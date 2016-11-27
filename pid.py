@@ -1,8 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Sep 20 21:57:29 2016
+pid - example of PID control of a simple process with a time constant
 
-@author: mtkes
+Copyright (c) 2016 - RocketRedNeck.com RocketRedNeck.net 
+
+RocketRedNeck and MIT Licenses 
+
+RocketRedNeck hereby grants license for others to copy and modify this source code for 
+whatever purpose other's deem worthy as long as RocketRedNeck is given credit where 
+where credit is due and you leave RocketRedNeck out of it for all other nefarious purposes. 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy 
+of this software and associated documentation files (the "Software"), to deal 
+in the Software without restriction, including without limitation the rights 
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions: 
+
+The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software. 
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE. 
 """
 
 import matplotlib.pyplot as plot
@@ -14,14 +38,14 @@ pvs = np.zeros(tmax)
 
 
 kp = 0.2
-ki = 0.01
+ki = 0.1
 kd = 0.0  
 
 dt = ts[1] - ts[0]
 
-Gp = 2
-delay = 50 * dt
-tau = 10 * dt
+Gp = 1
+delay = 1 * dt
+tau = 1 * dt
  
 
 sp  = 1.0
