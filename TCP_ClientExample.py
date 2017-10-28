@@ -39,6 +39,9 @@ IP_LOCAL = IP_ANY
 
 PORT = 53421
 
+def find(s, ch):
+    return [i for i, ltr in enumerate(s) if ltr == ch]
+
 while (True):
     connectionSocket  = socket.socket(family=socket.AF_INET,
                                      type=socket.SOCK_STREAM,
@@ -62,7 +65,16 @@ while (True):
             try:
                 data = connectionSocket.recv(1024)
                 data = data.decode("utf-8")
-                print(data + "!")
+                
+                # because the data is a stream of information
+                # we must parse it outselves
+                # In this example we are using the '*' character
+                # as a delimiter
+                terminators = find(data,'*')
+                starts = [0] + [x+1 for x in terminators[0:-1]]
+                for i in range(len(starts)):
+                    print(data[starts[i]:terminators[i]] + "!")
+                    
                 if (data == ''):
                     break
             except socket.timeout:
