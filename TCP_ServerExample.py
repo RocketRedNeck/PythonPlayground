@@ -55,7 +55,7 @@ import socket
 #
 #   '224.0.0.0' to '239.255.255.255' is reserved for multicast
 #
-IP_ANY = '127.0.0.1'     # In this case we don't care what address our hardware has
+IP_ANY = ''     # In this case we don't care what address our hardware has
 IP_LOOPBACK = '127.0.0.1'
 IP_LOCAL = IP_ANY
 
