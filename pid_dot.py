@@ -38,21 +38,23 @@ dt = 0.01
 ts = np.arange(0.0, tmax, dt)
 pvs = np.zeros(len(ts))
 sps = np.zeros(len(ts))
+mvs = np.zeros(len(ts))
+mps = np.zeros(len(ts))
 
 
-kf = 1.0
-kp = 0.0
+kf = 0.0
+kp = 20.0 #10.0
 ki = 0.0
-kd = 0.0  
+kd = 2.0 #1.0  
 
 dt = ts[1] - ts[0]
 
-Gp = 1
+Gp = 1.0
 delay = 1 * dt
-tau = 100 * dt
+tau = 1000 * dt
  
 
-sp_period  = 3.0
+sp_period  = 1.0
 
 err = 0.0
 intErr = 0.0
@@ -64,16 +66,23 @@ lastG = 0.0
 i = 0
 d = 0
 exp = -np.exp(-1/tau)
+mp = 0
 for t in ts:
-    sps[i] = math.sin(sp_period*t)
-    sps[i] = sps[i] / abs(sps[i])   # Square wave
-
+    if (t > 0):
+        sps[i] = math.sin(sp_period*t)
+        sps[i] = sps[i] / abs(sps[i])   # Square wave
+    else:
+        sps[i] = 0
+        
     derr = err - lastErr
     intErr = intErr + err
     mv = kf*sps[i] + (kp * err) + (ki * intErr) + (kd * (derr/dt))
+    mvs[i] = mv
+    mp = mp + (mv * dt)
+    mps[i] = mp
     G = 0.0
     if (t >= delay):
-        G = mv * Gp * (1.0 + exp) - (lastG * exp)
+        G = mp * Gp * (1.0 + exp) - (lastG * exp)
     else:
         d += 1
     
@@ -87,7 +96,7 @@ for t in ts:
     if (t >= delay):
         err = sps[i-d] - pvs[i-d]
         
-    #err += np.random.randn(1)*0.04
+   # err += np.random.randn(1)*0.09
     
     
 plot.figure(1)

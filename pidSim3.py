@@ -151,7 +151,7 @@ cvComm0 = np.zeros(nmax)  # cv value delayed for first communication bus
 camOffset_sec  = 0.0        # Offset to represent asynchronous camera start
 camOffset_index = round(camOffset_sec / dt_sec)
 camStart_index = camOffset_index          # "time" that camera runs
-camRate_Hz     = 30         # Camera frame rate
+camRate_Hz     = 12         # Camera frame rate
 camPeriod_sec  = 1.0/camRate_Hz
 camPeriod_index = round(camPeriod_sec / dt_sec)
 camEnd_index   = camStart_index + camPeriod_index
@@ -182,8 +182,8 @@ pvComm1 = np.zeros(nmax)  # pv value delayed for second communication bus
 # approach and will assume the variation has a normal distribution with a
 # 3-sigma distribution between the upper and lower limits
 pvImageStart_index = 0
-pvImageMaxRate_Hz = 12.0
-pvImageMinRate_Hz = 8.0
+pvImageMaxRate_Hz = 5.0
+pvImageMinRate_Hz = 3.0
 pvImageRateSigma = 3
 pvImageMaxDuration_sec = 1.0 / pvImageMinRate_Hz
 pvImageMinDuration_sec = 1.0 / pvImageMaxRate_Hz

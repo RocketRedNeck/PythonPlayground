@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pidSim2.py
+pidSim2++.py
 
 A simulation of a vision control to steering PID loop accounting for communication and
 processing latency and variation; demonstrates the impact of variation
@@ -63,9 +63,9 @@ nmax = ts_sec.__len__() # round(tmax_sec/dt_sec)
 ns = range(0, nmax)
 
 
-kp = 1.5    # Proportional gain
+kp = 4.0    # Proportional gain
 ki = 0.0    # Integral gain
-kd = 0.7   # Derivative gain
+kd = 1.5   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
 tau_sec   = 0.5     # This is the motor plus inertia time constant to reach velocity
@@ -149,7 +149,7 @@ cvComm0 = np.zeros(nmax)  # cv value delayed for first communication bus
 camOffset_sec  = 0.0        # Offset to represent asynchronous camera start
 camOffset_index = round(camOffset_sec / dt_sec)
 camStart_index = camOffset_index          # "time" that camera runs
-camRate_Hz     = 12         # Camera frame rate
+camRate_Hz     = 80         # Camera frame rate
 camPeriod_sec  = 1.0/camRate_Hz
 camPeriod_index = round(camPeriod_sec / dt_sec)
 camEnd_index   = camStart_index + camPeriod_index
@@ -181,8 +181,8 @@ pvComm1StartTags = np.NaN * np.zeros(nmax)
 # approach and will assume the variation has a normal distribution with a
 # 3-sigma distribution between the upper and lower limits
 pvImageStart_index = 0
-pvImageMaxRate_Hz = 5.0
-pvImageMinRate_Hz = 3.0
+pvImageMaxRate_Hz = 80.0
+pvImageMinRate_Hz = 80.0
 pvImageRateSigma = 3
 pvImageMaxDuration_sec = 1.0 / pvImageMinRate_Hz
 pvImageMinDuration_sec = 1.0 / pvImageMaxRate_Hz
@@ -411,7 +411,7 @@ for n in ns:
         #print("@ " + str(n) + " IMAGE PROCESSING end = " + str(pvImage[pvImageEnd_index]))
         comm2Start_index = pvImageEnd_index
     elif (n > 0):
-        pvImage[n] = pvImage[n-1] + dPvImage  # Predict where the image should go
+        pvImage[n] = pvImage[n-1] + dPvImage
         
     if (n == comm2Start_index):
         comm2End_index = comm2Start_index + comm2Delay_index

@@ -38,10 +38,12 @@ dt = 0.01
 ts = np.arange(0.0, tmax, dt)
 pvs = np.zeros(len(ts))
 sps = np.zeros(len(ts))
+mvs = np.zeros(len(ts))
+mps = np.zeros(len(ts))
 
 
-kf = 1.0
-kp = 0.0
+kf = 0.0
+kp = 20.0
 ki = 0.0
 kd = 0.0  
 
@@ -49,10 +51,10 @@ dt = ts[1] - ts[0]
 
 Gp = 1
 delay = 1 * dt
-tau = 100 * dt
+tau = 10000 * dt
  
 
-sp_period  = 3.0
+sp_period  = 1.0
 
 err = 0.0
 intErr = 0.0
@@ -64,16 +66,43 @@ lastG = 0.0
 i = 0
 d = 0
 exp = -np.exp(-1/tau)
-for t in ts:
-    sps[i] = math.sin(sp_period*t)
-    sps[i] = sps[i] / abs(sps[i])   # Square wave
+mp = 0
 
+# Motor equations
+#
+# Ts = kt * (V/R)
+#    Ts is stall torque
+#    V is applied voltage (e.g., 0 to 12 Volts)
+#    R is coil resistance (e.g. 9.16E-2 Ohm for CIM)
+#
+# wf = (kt/ke)*(V/R)
+#    wf is final angular rate at zero torque
+#    kt is defined by stall torque at applied voltage
+#    ke is ideally kt, but in reality it is usually slightly different
+#
+# T = Ts(1 - (w/wf))
+#    T is the torque at a specific angular rate
+#
+# w_dot = T/J
+#    w_dot is angular acceleration
+#    J is moment of inertial
+
+for t in ts:
+    if (t > 0):
+        sps[i] = math.sin(sp_period*t)
+        sps[i] = sps[i] / abs(sps[i])   # Square wave
+    else:
+        sps[i] = 0
+        
     derr = err - lastErr
     intErr = intErr + err
     mv = kf*sps[i] + (kp * err) + (ki * intErr) + (kd * (derr/dt))
+    mvs[i] = mv
+    mp = mp + (mv * dt)
+    mps[i] = mp
     G = 0.0
     if (t >= delay):
-        G = mv * Gp * (1.0 + exp) - (lastG * exp)
+        G = mp * Gp * (1.0 + exp) - (lastG * exp)
     else:
         d += 1
     
