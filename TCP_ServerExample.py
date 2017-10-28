@@ -137,6 +137,13 @@ while (True):
             while (True):
                 try:
                     i = i + 1
+                    
+                    # Because we are sending into a stream it
+                    # is up to us to define where the "message" or
+                    # data boundaries are... in this simple exmaple
+                    # we just use '*' to identify the end of our "message"
+                    # This allows the client to dice up the data on some
+                    # boundry as it receives the stream
                     s = 'String = ' + str(i + 1) + '*'
                     print(s)
                     acceptedSocket.send(str.encode(s))
