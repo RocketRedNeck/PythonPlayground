@@ -115,7 +115,7 @@ while (True):
             print(s)
             # Send only to the loopback address so our message does not leave
             # this computer
-            UdpSocket.sendto(str.encode(s), (IP_LOOPBACK, PORT))
+            UdpSocket.sendto(str.encode(s), ('192.168.1.241', PORT))
         except Exception as e:
             print(e)
             sendOk= False

@@ -40,7 +40,7 @@ IP_LOCAL = IP_ANY
 
 IP_MULTICAST_GROUP_A = '230.0.0.1'
 
-PORT = 53421
+PORT = 54321
 
 while (True):
     mySocket  = socket.socket(family=socket.AF_INET,
@@ -50,6 +50,9 @@ while (True):
     if (mySocket == None):
         print("Unable to create listen socket")
         break
+    
+    # Allow the address/port pair to be reused by other processes
+    mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
     print("Waiting for server...")
     mySocket.bind((IP_LOCAL, PORT))    # We only receive on this port

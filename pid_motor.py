@@ -33,7 +33,7 @@ import matplotlib.pyplot as plot
 import numpy as np
 import math
 
-tmax = 3.0
+tmax = 6.0
 dt = 0.01
 ts = np.arange(0.0, tmax, dt)
 pvs = np.zeros(len(ts))
@@ -43,7 +43,7 @@ mps = np.zeros(len(ts))
 
 
 kf = 0.0
-kp = 20.0
+kp = 25.0
 ki = 0.0
 kd = 0.0  
 
@@ -51,7 +51,7 @@ dt = ts[1] - ts[0]
 
 Gp = 1
 delay = 1 * dt
-tau = 10000 * dt
+tau = 100 * dt
  
 
 sp_period  = 1.0

@@ -278,8 +278,352 @@ class quaternion(np.ndarray):
     def transpose(self):
         # If the user sliced off the t (sequence) axis we need to
         # only transpose the axes present in the correct order
+        x = np.array([1, -1, -1, -1])
         if (len(self.shape) < 3):
-            return 
+            return x * self[np.newaxis,...].view(quaternion)
         else:
-            return 
+            return x * self
      
+            # -------------------------------------------------------------------
+    # Operator Overloads
+    # 
+    # Returns NotImplemented for anything that does not make sense
+    # -------------------------------------------------------------------
+    '''
+        object.__add__(self, other)                 +
+    '''
+    def __add__(self,b):
+        return NotImplemented
+
+    '''
+        object.__sub__(self, other)                 -
+    '''
+    def __sub__(self,b):
+        return NotImplemented
+
+    '''
+        object.__mul__(self, other)                 *
+    '''
+    def __mul__(self,b):
+        return self.__matmul__(b)
+    
+    '''
+        object.__matmul__(self, other)              @
+    '''
+    def __matmul__(self, b):
+        inType = type(b)
+        if (issubclass(inType,quaternion)):
+            return np.matmul(self,b.view(np.ndarray).transpose((0,2,1))).view(quaternion)
+        elif (issubclass(inType,list) or
+              issubclass(inType,np.ndarray)):
+            # TODO: Need to implement matric vector logic
+            return NotImplemented
+        else:
+            raise TypeError('Target type must be a dcm')
+
+    '''
+        object.__truediv__(self, other)             /
+    '''
+    def __truediv__(self,b):
+        return NotImplemented
+
+    '''
+        object.__floordiv__(self, other)            //
+    '''
+    def __floordiv__(self,b):
+        return NotImplemented
+    '''
+        object.__mod__(self, other)                 %
+    '''
+    def __mod__(self,b):
+        return NotImplemented
+    '''
+        object.__divmod__(self, other)              divmod()
+    '''
+    def __divmod__(self,b):
+        return NotImplemented
+    '''
+        object.__pow__(self, other[, modulo])       pow(), **
+    '''
+    def __pow__(self,b,*args):
+        return NotImplemented
+    
+    '''
+        object.__lshift__(self, other)              <<
+    '''
+    def __lshift__(self,b):
+        return NotImplemented
+    
+    '''
+        object.__rshift__(self, other)              >>
+    '''
+    def __rshift__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__and__(self, other)                 &
+    '''
+    def __and__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__xor__(self, other)                 ^
+    '''
+    def __xor__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__or__(self, other)                  |
+    '''
+    def __or__(self,b):
+        return NotImplemented
+    
+
+    '''
+        
+        Backup functions when left side is not of the correct type
+        object.__radd__(self, other)                +
+    '''
+    def __radd__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rsub__(self, other)                -
+    '''
+    def __rsub__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rmul__(self, other)                *
+    '''
+    def __rmul__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rmatmul__(self, other)             @
+    '''
+    def __rmatmul__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rtruediv__(self, other)            /
+    '''
+    def __rtruediv__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rfloordiv__(self, other)           //
+    '''
+    def __rfloordiv__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rmod__(self, other)                %
+    '''
+    def __rmod__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rdivmod__(self, other)             divmod()
+    '''
+    def __rdivmod__(self,b):
+        return NotImplemented
+
+    '''
+        object.__rpow__(self, other)                pow(), **
+    '''
+    def __rpow__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rlshift__(self, other)             <<
+    '''
+    def __rlshift__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rrshift__(self, other)             >>
+    '''
+    def __rrshift__(self,b):
+        return NotImplemented
+
+
+    '''
+        object.__rand__(self, other)                &
+    '''
+    def __rand__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__rxor__(self, other)                ^
+    '''
+    def __rxor__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__ror__(self, other)                 |        
+    '''
+    def __ror__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__iadd__(self, other)                +=
+    '''
+    def __iadd__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__isub__(self, other)                -=
+    '''
+    def __isub__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__imul__(self, other)                *=
+    '''
+    def __imul__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__imatmul__(self, other)             @=
+    '''
+    def __imatmul__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__itruediv__(self, other)            /=
+    '''
+    def __itruediv__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__ifloordiv__(self, other)           //=
+    '''
+    def __ifloordiv__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__imod__(self, other)                %=
+    '''
+    def __imod__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__ipow__(self, other[, modulo])      **=
+    '''
+    def __ipow__(self,b,*args):
+        return NotImplemented
+    
+
+    '''
+        object.__ilshift__(self, other)             <<=
+    '''
+    def __ilshift__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__irshift__(self, other)             >>=
+    '''
+    def __irshift__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__iand__(self, other)                &=
+    '''
+    def __iand__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__ixor__(self, other)                ^=
+    '''
+    def __ixor__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__ior__(self, other)                 |=        
+    '''
+    def __ior__(self,b):
+        return NotImplemented
+    
+
+    '''
+        object.__neg__(self)                        -
+    '''
+    # Use superclass
+
+    '''
+        object.__pos__(self)                        +
+    '''
+    # Use superclass
+
+    '''
+        object.__abs__(self)                        abs()
+    '''
+    def __abs__(self):
+        return NotImplemented
+    
+
+    '''
+        object.__invert__(self)                     ~
+    '''
+    def __invert__(self):
+        return self.transpose()
+
+    '''
+        object.__complex__(self)                    complex()
+    '''
+    def __complex__(self):
+        return NotImplemented
+    
+
+    '''
+        object.__int__(self)                        int()
+    '''
+    def __int__(self):
+        return NotImplemented
+    
+
+    '''
+        object.__float__(self)                      float()
+    '''
+    def __float__(self):
+        return NotImplemented
+    
+
+    '''
+        object.__round__(self[, n])                 round()
+    '''
+    def __round__(self, *args):
+        return NotImplemented
+    
+
+    '''
+        object.__index__(self)                      operator.index()
+    '''    
+    # Use superclass 

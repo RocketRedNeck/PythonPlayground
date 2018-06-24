@@ -85,7 +85,7 @@ IP_MULTICAST_GROUP_A = '230.0.0.1'
 # We just need to pick a port to start listening for connections
 # then we will let the system assign connections to a new port to
 # keep traffic separated
-PORT = 53421
+PORT = 54321
 
 while (True):
     # A UDP socket is an object we will use to send data to an address
@@ -104,7 +104,7 @@ while (True):
     # local network segment. If we need to let the message go further,
     # multicasting to many networks we can set the TTL value as high
     # as 255
-    ttl = struct.pack('b', 1)
+    ttl = struct.pack('b', 127)
     mySocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
     
     # 'binding' a socket just means associating it with an
