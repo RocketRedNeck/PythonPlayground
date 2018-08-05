@@ -87,11 +87,14 @@ r = r*2.54/100;  # convert inches to meters
 M *= 0.4535924;  # convert lbm to kg
 
 # calculate Derived Constants once:
-Toffset = (Tspec*Vbat*Wspec)/(Vspec*Wspec+Ispec*Rone*Wspec+Ispec*n*Rcom*Wspec);
+#Toffset = (Tspec*Vbat*Wspec)/(Vspec*Wspec+Ispec*Rone*Wspec+Ispec*n*Rcom*Wspec);
 Tslope = (Tspec*Vspec)/(Vspec*Wspec+Ispec*Rone*Wspec+Ispec*n*Rcom*Wspec);
 Kt = Tspec/Ispec;
 W = M*9.80665;
 F2A = r/(n*Kf*G*Kt); # vehicle total force to per-motor amps conversion
+
+def Toffset(volts):
+    return (Tspec*volts*Wspec)/(Vspec*Wspec+Ispec*Rone*Wspec+Ispec*n*Rcom*Wspec)
 
 def accel(Vi,i):  # compute acceleration w/ slip
 
@@ -104,7 +107,7 @@ def accel(Vi,i):  # compute acceleration w/ slip
 #Fa; # vehicle accel force, Newtons
     global slipping
     Wm = Vi/r*G;
-    Tm = Toffset-Tslope*Wm; # available torque at motor @ V
+    Tm = Toffset(Vbat)-Tslope*Wm; # available torque at motor @ V
     Tw = Kf*Tm*G; # available torque at one wheel @ V
     Ft = Tw/r*n;  # available force at wheels @ V
     if (Ft>W*us):
