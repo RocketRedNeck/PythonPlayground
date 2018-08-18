@@ -140,21 +140,29 @@ def Fdrag(v,Cd,A,rho):
     return -Cd*A*q(v,rho)
 
 """
+Fbouyancy is the bouyant force of an object in the fluid
+"""
+def Fbouyancy(V,rho):
+    return rho*V*const.g
+
+"""
 f is the system of equations we want to model with arguments for parameterizing
 the system
 """
-def f(t, s, Cd, A, m, rho):
+def f(t, s, Cd, A, V, m, rho):
     # Prevent downward velocity from exceeding terminal velocity
     # This prevent the integrator from exceeding physics before
     # it is incorporated into the next step
-    if (s[3] < -(2.0*const.g*m/(Cd*rho*A))):
-        s[3] = -(2.0*const.g*m/(Cd*rho*A))
+    vx = s[2]
+    vy = s[3]
+    if (vy < -(2.0*const.g*m/(Cd*rho*A))):
+        vy = -(2.0*const.g*m/(Cd*rho*A))
         
-    ax = Fdrag(s[2], Cd, A, rho)/m
-    ay = Fdrag(s[3], Cd, A, rho)/m
+    ax = (Fdrag(vx, Cd, A, rho) + Fbouyancy(V, rho))/m
+    ay = Fdrag(vy, Cd, A, rho)/m
     
-    return [s[2], 
-            s[3], 
+    return [vx, 
+            vy, 
             ax, 
             ay - const.g]
     
@@ -168,12 +176,19 @@ Cd = 0.5            # Smooth sphere drag coefficient at Re between approximately
 m_shotput_kg = 7.26         # Men's shot put mass in Kg
 d_shotput_m = 0.120         # Average diameter of shot put in meters (m)
 A_shotput_m2 = const.pi * (d_shotput_m / 2.0)**2   # Cross section area of shot put m^2
+V_shotput_m3 = (4.0/3.0)*const.pi*(d_shotput_m / 2.0)**3
 
 # Whiffle ball mass and diameter but NOT the aerodynamic characterstics
 m_whiffle_kg = 0.045        # Average Whiffle ball mass in Kg
 d_whiffle_m = 0.0765        # Average diameter of whiffle ball in meters (m)
 A_whiffle_m2 = const.pi * (d_whiffle_m / 2.0)**2   # Cross section area of whiffle m^2
+V_whiffle_m3 = (4.0/3.0)*const.pi*(d_whiffle_m / 2.0)**3
 
+# WBeach ball mass and diameter
+m_beach_kg = 0.5         # Average Beach ball mass in Kg
+d_beach_m = 0.609        # Average diameter of beach ball in meters (m)
+A_beach_m2 = const.pi * (d_beach_m / 2.0)**2   # Cross section area of beach ball m^2
+V_beach_m3 = (4.0/3.0)*const.pi*(d_beach_m / 2.0)**3
 
 # Define an Olympian for the initial state
 # https://www.brunel.ac.uk/~spstnpl/BiomechanicsAthletics/ShotPut.htm
@@ -196,26 +211,31 @@ tstop = 10.0
 # and set the initial conditions from the above s0 state
 shotput_index = 0
 whiffle_index = 1
+beach_index   = 2
+
+max_index = 3
 
 ts = np.arange(0.0, tstop, dt)
-px = np.zeros((len(ts), 2));
+px = np.zeros((len(ts), max_index));
 px[0,:] = s0[0]
-py = np.zeros((len(ts), 2));
+py = np.zeros((len(ts), max_index));
 py[0,:] = s0[1]
-vx = np.zeros((len(ts), 2));
+vx = np.zeros((len(ts), max_index));
 vx[0,:] = s0[2]
-vy = np.zeros((len(ts), 2));
+vy = np.zeros((len(ts), max_index));
 vy[0,:] = s0[3]
-qx = np.zeros((len(ts), 2));
+qx = np.zeros((len(ts), max_index));
 qx[0,:] = q(vx[0,0],rho_kgpm3)
-qy = np.zeros((len(ts), 2));
+qy = np.zeros((len(ts), max_index));
 qy[0,:] = q(vy[0,0],rho_kgpm3)
-Fx = np.zeros((len(ts), 2));
+Fx = np.zeros((len(ts), max_index));
 Fx[0,shotput_index] = Fdrag(vx[0,shotput_index],Cd, A_shotput_m2, rho_kgpm3)
 Fx[0,whiffle_index] = Fdrag(vx[0,whiffle_index],Cd, A_whiffle_m2, rho_kgpm3)
-Fy = np.zeros((len(ts), 2));
+Fx[0,beach_index]   = Fdrag(vx[0,beach_index],Cd, A_beach_m2, rho_kgpm3)
+Fy = np.zeros((len(ts), max_index));
 Fy[0,shotput_index] = Fdrag(vy[0,shotput_index],Cd, A_shotput_m2, rho_kgpm3)
 Fy[0,whiffle_index] = Fdrag(vy[0,whiffle_index],Cd, A_whiffle_m2, rho_kgpm3)
+Fy[0,beach_index]   = Fdrag(vy[0,beach_index],Cd, A_beach_m2, rho_kgpm3)
 
 
 # ****************************************************************
@@ -230,7 +250,7 @@ Fy[0,whiffle_index] = Fdrag(vy[0,whiffle_index],Cd, A_whiffle_m2, rho_kgpm3)
 # We'll explain that some other day
 
 myInt = ode(f).set_integrator('dopri5')
-myInt.set_initial_value(s0, t0).set_f_params(Cd, A_shotput_m2, m_shotput_kg, rho_kgpm3)
+myInt.set_initial_value(s0, t0).set_f_params(Cd, A_shotput_m2, V_shotput_m3, m_shotput_kg, rho_kgpm3)
 
 # Run the integrator until the shot put hits the ground
 # Note: While I like using the variable 's' for state, the integrator
@@ -250,7 +270,7 @@ while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and i < len(ts):
     i = i + 1
 
 # Change the parameters to run the integrator on the whiffle ball-like object
-myInt.set_initial_value(s0, t0).set_f_params(Cd, A_whiffle_m2, m_whiffle_kg, rho_kgpm3)
+myInt.set_initial_value(s0, t0).set_f_params(Cd, A_whiffle_m2, V_whiffle_m3, m_whiffle_kg, rho_kgpm3)
 
 # Run the integrator until the whiffle hits the ground
 j = 1
@@ -266,30 +286,70 @@ while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and j < len(ts):
     Fy[j,whiffle_index] = Fdrag(vy[j,whiffle_index],Cd, A_whiffle_m2, rho_kgpm3)
     j = j + 1
 
+# Change the parameters to run the integrator on the beach ball
+myInt.set_initial_value(s0, t0).set_f_params(Cd, A_beach_m2, V_beach_m3, m_beach_kg, rho_kgpm3)
+
+# Run the integrator until the beach ball hits the ground
+k = 1
+while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and k < len(ts):
+    myInt.integrate(myInt.t + dt)
+    px[k,beach_index] = myInt.y[0]
+    py[k,beach_index] = myInt.y[1]
+    vx[k,beach_index] = myInt.y[2]
+    vy[k,beach_index] = myInt.y[3]
+    qx[k,beach_index] = q(vx[j,beach_index],rho_kgpm3)
+    qy[k,beach_index] = q(vy[j,beach_index],rho_kgpm3)
+    Fx[k,beach_index] = Fdrag(vx[k,beach_index],Cd, A_beach_m2, rho_kgpm3)
+    Fy[k,beach_index] = Fdrag(vy[k,beach_index],Cd, A_beach_m2, rho_kgpm3)
+    k = k + 1
     
 pl.figure(1)
 pl.cla()
 pl.grid()
-pl.plot(px[0:i,shotput_index],py[0:i,shotput_index],px[0:j,whiffle_index],py[0:j,whiffle_index])
+pl.plot(px[0:i,shotput_index],py[0:i,shotput_index],
+        px[0:j,whiffle_index],py[0:j,whiffle_index],
+        px[0:k,beach_index],  py[0:k,beach_index])
 pl.title('Trajectory')
 pl.xlabel('meters')
 pl.ylabel('meters')
-pl.legend(['Shot Put','Whiffle'])
+pl.legend(['Shot Put',
+           'Whiffle',
+           'Beach'])
 
 pl.figure(2)
 pl.cla()
 pl.grid()
-pl.plot(ts[0:i],vx[0:i,shotput_index],ts[0:i],vy[0:i,shotput_index],ts[0:j],vx[0:j,whiffle_index],ts[0:j],vy[0:j,whiffle_index])
+pl.plot(ts[0:i],vx[0:i,shotput_index],
+        ts[0:i],vy[0:i,shotput_index],
+        ts[0:j],vx[0:j,whiffle_index],
+        ts[0:j],vy[0:j,whiffle_index],
+        ts[0:k],vx[0:k,beach_index],
+        ts[0:k],vy[0:k,beach_index])
 pl.title('Speed Components')
 pl.xlabel('time (s)')
 pl.ylabel('speed (m/s)')
-pl.legend(['Shot Put vx','Shot Put vy', 'Whiffle vx', 'Whiffle vy'])
+pl.legend(['Shot Put vx',
+           'Shot Put vy', 
+           'Whiffle vx', 
+           'Whiffle vy', 
+           'Beach vx', 
+           'Beach vy'])
 
 pl.figure(3)
 pl.cla()
 pl.grid()
-pl.plot(ts[0:i],Fx[0:i,shotput_index],ts[0:i],Fy[0:i,shotput_index],ts[0:j],Fx[0:j,whiffle_index],ts[0:j],Fy[0:j,whiffle_index])
+pl.plot(ts[0:i],Fx[0:i,shotput_index],
+        ts[0:i],Fy[0:i,shotput_index],
+        ts[0:j],Fx[0:j,whiffle_index],
+        ts[0:j],Fy[0:j,whiffle_index],
+        ts[0:k],Fx[0:k,beach_index],
+        ts[0:k],Fy[0:k,beach_index])
 pl.title('Drag Components')
 pl.xlabel('time (s)')
 pl.ylabel('drag (N)')
-pl.legend(['Shot Put Fx','Shot Put Fy', 'Whiffle Fx', 'Whiffle Fy'])
+pl.legend(['Shot Put Fx',
+           'Shot Put Fy', 
+           'Whiffle Fx', 
+           'Whiffle Fy',
+           'Beach Fx', 
+           'Beach Fy'])
