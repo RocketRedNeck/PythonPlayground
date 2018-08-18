@@ -144,10 +144,19 @@ f is the system of equations we want to model with arguments for parameterizing
 the system
 """
 def f(t, s, Cd, A, m, rho):
+    # Prevent downward velocity from exceeding terminal velocity
+    # This prevent the integrator from exceeding physics before
+    # it is incorporated into the next step
+    if (s[3] < -(2.0*const.g*m/(Cd*rho*A))):
+        s[3] = -(2.0*const.g*m/(Cd*rho*A))
+        
+    ax = Fdrag(s[2], Cd, A, rho)/m
+    ay = Fdrag(s[3], Cd, A, rho)/m
+    
     return [s[2], 
             s[3], 
-            Fdrag(s[2], Cd, A, rho)/m, 
-            Fdrag(s[3], Cd, A, rho)/m - const.g]
+            ax, 
+            ay - const.g]
     
 # Define some constants for each case
     
@@ -267,3 +276,20 @@ pl.xlabel('meters')
 pl.ylabel('meters')
 pl.legend(['Shot Put','Whiffle'])
 
+pl.figure(2)
+pl.cla()
+pl.grid()
+pl.plot(ts[0:i],vx[0:i,shotput_index],ts[0:i],vy[0:i,shotput_index],ts[0:j],vx[0:j,whiffle_index],ts[0:j],vy[0:j,whiffle_index])
+pl.title('Speed Components')
+pl.xlabel('time (s)')
+pl.ylabel('speed (m/s)')
+pl.legend(['Shot Put vx','Shot Put vy', 'Whiffle vx', 'Whiffle vy'])
+
+pl.figure(3)
+pl.cla()
+pl.grid()
+pl.plot(ts[0:i],Fx[0:i,shotput_index],ts[0:i],Fy[0:i,shotput_index],ts[0:j],Fx[0:j,whiffle_index],ts[0:j],Fy[0:j,whiffle_index])
+pl.title('Drag Components')
+pl.xlabel('time (s)')
+pl.ylabel('drag (N)')
+pl.legend(['Shot Put Fx','Shot Put Fy', 'Whiffle Fx', 'Whiffle Fy'])
