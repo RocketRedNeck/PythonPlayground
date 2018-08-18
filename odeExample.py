@@ -163,7 +163,7 @@ A_shotput_m2 = const.pi * (d_shotput_m / 2.0)**2   # Cross section area of shot 
 # Whiffle ball mass and diameter but NOT the aerodynamic characterstics
 m_whiffle_kg = 0.045        # Average Whiffle ball mass in Kg
 d_whiffle_m = 0.0765        # Average diameter of whiffle ball in meters (m)
-A_whiffle_m2 = const.pi * (d_shotput_m / 2.0)**2   # Cross section area of shot put m^2
+A_whiffle_m2 = const.pi * (d_whiffle_m / 2.0)**2   # Cross section area of shot put m^2
 
 
 # Define an Olympian for the initial state
