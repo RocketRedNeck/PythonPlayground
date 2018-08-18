@@ -243,10 +243,7 @@ while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and i < len(ts):
 # Change the parameters to run the integrator on the whiffle ball-like object
 myInt.set_initial_value(s0, t0).set_f_params(Cd, A_whiffle_m2, m_whiffle_kg, rho_kgpm3)
 
-# Run the integrator until the shot put hits the ground
-# Note: While I like using the variable 's' for state, the integrator
-# internally uses 'y' so we will transfer the states to our own storage
-# at each step to plot later
+# Run the integrator until the whiffle hits the ground
 j = 1
 while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and j < len(ts):
     myInt.integrate(myInt.t + dt)
