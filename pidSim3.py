@@ -65,12 +65,12 @@ nmax = ts_sec.__len__() # round(tmax_sec/dt_sec)
 ns = range(0, nmax)
 
 
-kp = 0.00    # Proportional gain
+kp = 0.0    # Proportional gain
 ki = 0.0    # Integral gain
 kd = 0.8   # Derivative gain
 kg = 1.0    # Plant (Process) gain
 
-tau_sec   = 0.00000001  # Assume motor torque response is nearly instantaneous
+tau_sec   = 0.3  # Assume motor torque response is nearly instantaneous
  
 
 sp  = np.zeros(nmax)        # Will initialize after first image processed
@@ -103,10 +103,10 @@ p = np.zeros(nmax)     # linear or angular position
 # can only assure that the task wakes up no earlier than scheduled.
 # Empirical measurement of the task latency is required for accurate
 # modeling, but for now we can just assume about a 10% average
-pidPeriod_sec    = 0.02;
+pidPeriod_sec    = 0.01;
 pidPeriod_index  = round(pidPeriod_sec / dt_sec)
 pidStart_index   = 0        # "time" that PID computation started
-pidDuration_sec  = 0.001    # Time to complete PID calculation (models software latency)
+pidDuration_sec  = 0.0001    # Time to complete PID calculation (models software latency)
 pidDuration_index = round(pidDuration_sec / dt_sec)
 pidEnd_index      = pidStart_index + pidDuration_index    # "time" that PID computation ended
 pidMinJitter_sec    = 0.000   # Minimum Random task jitter
@@ -182,8 +182,8 @@ pvComm1 = np.zeros(nmax)  # pv value delayed for second communication bus
 # approach and will assume the variation has a normal distribution with a
 # 3-sigma distribution between the upper and lower limits
 pvImageStart_index = 0
-pvImageMaxRate_Hz = 5.0
-pvImageMinRate_Hz = 3.0
+pvImageMaxRate_Hz = 30.0
+pvImageMinRate_Hz = 10.0
 pvImageRateSigma = 3
 pvImageMaxDuration_sec = 1.0 / pvImageMinRate_Hz
 pvImageMinDuration_sec = 1.0 / pvImageMaxRate_Hz
