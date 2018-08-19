@@ -176,21 +176,21 @@ Cd = 0.5            # Smooth sphere drag coefficient at Re between approximately
 m_shotput_kg = 7.26         # Men's shot put mass in Kg
 d_shotput_m = 0.120         # Average diameter of shot put in meters (m)
 A_shotput_m2 = const.pi * (d_shotput_m / 2.0)**2   # Cross section area of shot put m^2
-V_shotput_m3 = 0 #(4.0/3.0)*const.pi*(d_shotput_m / 2.0)**3
+V_shotput_m3 = (4.0/3.0)*const.pi*(d_shotput_m / 2.0)**3
 
 
 # Whiffle ball mass and diameter but NOT the aerodynamic characterstics
 m_whiffle_kg = 0.045        # Average Whiffle ball mass in Kg
 d_whiffle_m = 0.0765        # Average diameter of whiffle ball in meters (m)
 A_whiffle_m2 = const.pi * (d_whiffle_m / 2.0)**2   # Cross section area of whiffle m^2
-V_whiffle_m3 = 0 #(4.0/3.0)*const.pi*(d_whiffle_m / 2.0)**3
+V_whiffle_m3 = (4.0/3.0)*const.pi*(d_whiffle_m / 2.0)**3
 m_whiffle_kg += V_whiffle_m3 * rho_kgpm3    # Air inside sealed ball
 
 # WBeach ball mass and diameter
 m_beach_kg = 0.5         # Average Beach ball mass in Kg
 d_beach_m = 0.609        # Average diameter of beach ball in meters (m)
 A_beach_m2 = const.pi * (d_beach_m / 2.0)**2   # Cross section area of beach ball m^2
-V_beach_m3 = 0 #(4.0/3.0)*const.pi*(d_beach_m / 2.0)**3
+V_beach_m3 = (4.0/3.0)*const.pi*(d_beach_m / 2.0)**3
 m_beach_kg += V_beach_m3 * rho_kgpm3        # Air inside sealed ball
 
 # Define an Olympian for the initial state
