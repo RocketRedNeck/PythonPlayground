@@ -4,12 +4,8 @@ odeExample - example of integration of ordinary differential equations in the
              form of an understandable physical system that can be visualized
              by middle and high school students
 
-    Equations of motion of a shot put and plastic-like ball with drag in 
-    2-dimensions
-    
-    NOTE: We won't be modeling the actual plastic ball aerodynamics, just the
-    mass and diameter as it is effected by simple drag on a sphere.
- 
+    Equations of motion of a mass-spring-damper hanging form the ceiling
+     
     Definitions
     -----------
         px = x-component of position
@@ -147,28 +143,37 @@ def Fbouyancy(V,rho):
     return rho*V*const.g
 
 """
-F is the total force due to drag and buoyancy
+Fmagnus is the magnus force on the spinning ball
 
-NOTE: We have not included the Magnus effect for a rotating ball, yet
-      Fundamentally to get the Magnus effect we can approximate the
-      lift as described here: https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/beach.html
-      This derived from the description of Kutta-Joukowski lift on a rotating
-      cylinder
+  Fundamentally to get the Magnus effect we can approximate the
+  lift as described here: https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/beach.html
+  This derived from the description of Kutta-Joukowski lift on a rotating
+  cylinder
+  
+  F/L = r * v * G
+  
+  where G is vortex strength (basically the rotation creating a radial pressure gradient
+  that induced the pressure drop that causes the force on the object)
+  
+  G = 2*rho*r^2 * w
+  w = rotation rate
+  
+  The force produced by the rotation in a flow is then:
       
-      F/L = r * v * G
-      
-      where G is vortex strength (basically the rotation creating a radial pressure gradient
-      that induced the pressure drop that causes the force on the object)
-      
-      G = 2*p*r^2 * w
-      w = rotation rate
-      
-      The force produced by the rotation in a flow is then:
-          
-      F = (r * G * V) * (2 * b) * (pi / 4)
-      
-      b = ball radius = r, the cylinder radius
-      
+  F = (r * G * v) * (2 * b) * (pi / 4)
+  
+  b = ball radius = r, the cylinder radius
+"""
+def Fmagnus(v,r,w,rho):
+    G = 2.0 * rho * (r**2) * w
+    return (r * G * v) * 2.0 * r * const.pi / 4.0
+
+"""
+F is the total force due to drag and buoyancy, a convenience function
+for initialization
+
+NOTE: We have not included the Magnus effect for a rotating ball because
+it needs to be incorporated perpendicular to the velocity     
 """
 def F(v,Cd,A,V,rho):
     return Fdrag(v, Cd, A, rho) + Fbouyancy(V, rho)

@@ -255,7 +255,7 @@ s0 = [0.0,
 
 t0 = 0.0
 dt = 0.01
-tstop = 10.0
+tstop = 100.0
 
 # Create some arrays for storage so we can plot results later
 # and set the initial conditions from the above s0 state
