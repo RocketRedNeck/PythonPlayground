@@ -243,8 +243,8 @@ rho_beach_kgpm3 = m_beach_kg/V_beach_m3
 # https://www.brunel.ac.uk/~spstnpl/BiomechanicsAthletics/ShotPut.htm
 # Start the shot put at 2.0 meters at a projection angle of 
 # 37 degrees above horizon at 15 m/s
-v0_mp2 = 15
-ang0_deg = 37
+v0_mp2 = 0.15
+ang0_deg = 0.37
 ang0_rad = ang0_deg * const.pi / 180.0
 w_radpsec = -2.0 * (2.0 * const.pi)
 
