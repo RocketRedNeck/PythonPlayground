@@ -198,8 +198,8 @@ def f(t, s, Cd, A, V, m, rho_fluid, rho_object, r, w):
     if (vy < -vterminal):
         vy = -vterminal
         
-    ax = (Fdrag(vx, Cd, A, rho_fluid) + Fmagnus(vy,r,w,rho_fluid))/m
-    ay = (Fdrag(vy, Cd, A, rho_fluid) + Fbouyancy(V, rho_fluid) - Fmagnus(vx,r,w,rho_fluid))/m
+    ax = (Fdrag(vx, Cd, A, rho_fluid) - Fmagnus(vy,r,w,rho_fluid))/m
+    ay = (Fdrag(vy, Cd, A, rho_fluid) + Fbouyancy(V, rho_fluid) + Fmagnus(vx,r,w,rho_fluid))/m
     
     return [vx, 
             vy, 
@@ -246,7 +246,9 @@ rho_beach_kgpm3 = m_beach_kg/V_beach_m3
 v0_mp2 = 0.15
 ang0_deg = 0.37
 ang0_rad = ang0_deg * const.pi / 180.0
-w_radpsec = -2.0 * (2.0 * const.pi)
+
+# NOTE: POSITIVE value is backspin
+w_radpsec = 2.0 * (2.0 * const.pi)  
 
 s0 = [0.0,
       2.0,
