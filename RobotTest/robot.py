@@ -11,6 +11,47 @@ import wpilib.buttons
 import wpilib.drive
 import wpilib.command
 
+# Put in OI
+PS4AxisStrings = [
+
+	"LEFT_STICK_X",
+	"LEFT_STICK_Y",
+	"RIGHT_STICK_X",
+	"L2_AXIS",
+	"R2_AXIS",
+	"RIGHT_STICK_Y"
+]
+PS4AxisEnum = enumerate(PS4AxisStrings)
+PS4Axis = {}
+for i,e in PS4AxisEnum:
+    PS4Axis[e] = i 
+	
+PS4ButtonStrings = [    
+
+   "Undefined",
+	"SQUARE", 
+	"CROSS", 
+	"CIRCLE", 
+	"TRIANGLE", 
+	"L1", 
+	"R1", 
+	"L2", 
+	"R2",
+	"SHARE", 
+	"OPTIONS", 
+	"L_STICK", 
+	"R_STICK", 
+	"PS4", 
+	"TRACKPAD"
+]
+PS4ButtonEnum = enumerate(PS4ButtonStrings)
+PS4Button = {}
+for i,e in PS4ButtonEnum:
+    PS4Button[e] = i
+
+# Do something similar to the above for RobotMap motor IDs and functional
+# button mapping
+    
 class MyRobot(wpilib.IterativeRobot):
 
     def robotInit(self):
@@ -28,10 +69,10 @@ class MyRobot(wpilib.IterativeRobot):
         
         self.controller = wpilib.Joystick(0)
         
-        self.forward  = wpilib.buttons.JoystickButton(self.controller, 4) #TRIANGLE
-        self.backward = wpilib.buttons.JoystickButton(self.controller, 2) #CROSS
-        self.right    = wpilib.buttons.JoystickButton(self.controller, 3) #CIRCLE
-        self.left     = wpilib.buttons.JoystickButton(self.controller, 1) #SQUARE
+        self.forward  = wpilib.buttons.JoystickButton(self.controller, PS4Button["TRIANGLE"])
+        self.backward = wpilib.buttons.JoystickButton(self.controller, PS4Button["CROSS"])
+        self.right    = wpilib.buttons.JoystickButton(self.controller, PS4Button["CIRCLE"])
+        self.left     = wpilib.buttons.JoystickButton(self.controller, PS4Button["SQUARE"])
         
         # Position gets automatically updated as robot moves
         self.gyro = wpilib.AnalogGyro(1)
