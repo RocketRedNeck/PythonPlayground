@@ -22,42 +22,35 @@ from commands.turnRight import TurnRight
 from commands.turnLeft import TurnLeft
 
 # Put in OI
-PS4AxisStrings = [
 
-	"LEFT_STICK_X",
-	"LEFT_STICK_Y",
-	"RIGHT_STICK_X",
-	"L2_AXIS",
-	"R2_AXIS",
-	"RIGHT_STICK_Y"
-]
-PS4AxisEnum = enumerate(PS4AxisStrings)
-PS4Axis = {}
-for i,e in PS4AxisEnum:
-    PS4Axis[e] = i 
+PS4Axis = {	
+   "LEFT_STICK_X"  : 0,
+	"LEFT_STICK_Y"  : 1,
+	"RIGHT_STICK_X" : 2,
+	"L2_AXIS"       : 3,
+	"R2_AXIS"       : 4,
+	"RIGHT_STICK_Y" : 5
+}
+
 	
-PS4ButtonStrings = [    
+PS4Button = {    
 
-   "Undefined",
-	"SQUARE", 
-	"CROSS", 
-	"CIRCLE", 
-	"TRIANGLE", 
-	"L1", 
-	"R1", 
-	"L2", 
-	"R2",
-	"SHARE", 
-	"OPTIONS", 
-	"L_STICK", 
-	"R_STICK", 
-	"PS4", 
-	"TRACKPAD"
-]
-PS4ButtonEnum = enumerate(PS4ButtonStrings)
-PS4Button = {}
-for i,e in PS4ButtonEnum:
-    PS4Button[e] = i
+   "Undefined"    : 0,
+	"SQUARE"       : 1, 
+	"CROSS"        : 2, 
+	"CIRCLE"       : 3, 
+	"TRIANGLE"     : 4, 
+	"L1"           : 5, 
+	"R1"           : 6, 
+	"L2"           : 7, 
+	"R2"           : 8,
+	"SHARE"        : 9, 
+	"OPTIONS"      : 10, 
+	"L_STICK"      : 11, 
+	"R_STICK"      : 12, 
+	"PS4"          : 13, 
+	"TRACKPAD"     : 14
+}
 
 # Do something similar to the above for RobotMap motor IDs and functional
 # button mapping
@@ -86,11 +79,7 @@ class MyRobot(wpilib.IterativeRobot):
         
         self.left.whenPressed(TurnLeft())
         self.left.whenReleased(Stop())
-        
-    def disabled(self):
-        '''Called when the robot is disabled'''
-        pass
-            
+                   
     def autonomousInit(self):
         '''Called only at the beginning of autonomous mode'''
         pass
