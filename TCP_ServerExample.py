@@ -121,7 +121,7 @@ while (True):
         acceptedSocket, addressInfo = listeningSocket.accept()
         print("Accepted connection @ " + str(addressInfo[0]) + " : " + str(addressInfo[1]))
         
-        listeningSocket.close() # For this example we don't need this
+        listeningSocket.close() # For this example we don't need to keep this
         
         acceptedSocket.settimeout(1.0)
         data = acceptedSocket.recv(1024)
