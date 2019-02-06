@@ -17,11 +17,11 @@ y4 = np.sign(x)*(np.log(1-abs(x))) / np.log(1/127)
 y5 = np.abs(x)*np.sin(x*np.pi/2)
 
 pl.figure(1)
-pl.plot(x,y1,x,y2,x,y3,x,y4,x,y5)
+pl.plot(x,y1,x,y2,x,y3,x,y5)
 pl.xlabel('Input Value')
 pl.ylabel('Output Value')
 pl.grid()
-pl.legend(['x', 'x**2','x**3','log','sin'],loc="upper left")
+pl.legend(['x', '|x|*x','x**3','sine'],loc="upper left")
 pl.savefig("Figure1.png")
 
 pl.figure(2)

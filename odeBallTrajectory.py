@@ -405,3 +405,5 @@ pl.legend(['Shot Put Fx',
            'plastic Fy',
            'Beach Fx', 
            'Beach Fy'])
+		   
+pl.show()
