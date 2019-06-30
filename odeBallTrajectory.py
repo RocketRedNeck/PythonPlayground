@@ -248,7 +248,7 @@ ang0_deg = 37
 ang0_rad = ang0_deg * const.pi / 180.0
 
 # NOTE: POSITIVE value is backspin
-w_radpsec = 7.0 * (2.0 * const.pi)  
+w_radpsec = 2.0 * (2.0 * const.pi)  
 
 s0 = [0.0,
       2.0,
