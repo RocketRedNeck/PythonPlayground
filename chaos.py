@@ -23,3 +23,5 @@ pl.plot(R,x[:,499:999])
 
 pl.figure(2)
 pl.hist(x[R.size-1,499:999],100)
+
+pl.show()
