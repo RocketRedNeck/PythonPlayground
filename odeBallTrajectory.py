@@ -222,8 +222,9 @@ rho_shotput_kgpm3 = m_shotput_kg/V_shotput_m3
 
 
 # plastic ball mass and diameter but NOT the aerodynamic characterstics
-m_plastic_kg = 0.045        # Average plastic ball mass in Kg
-d_plastic_m = 0.0765        # Average diameter of plastic ball in meters (m)
+m_plastic_kg = 0.1417         # FIRST Rise ball mass in Kg
+d_plastic_m = 0.1778         # Average diameter of FIRST Rise ball in meters (m)
+
 r_plastic_m = d_plastic_m/ 2.0
 A_plastic_m2 = const.pi * r_plastic_m**2   # Cross section area of plastic m^2
 V_plastic_m3 = (4.0/3.0) * const.pi * r_plastic_m**3
@@ -244,16 +245,17 @@ rho_beach_kgpm3 = m_beach_kg/V_beach_m3
 # Start the shot put at 2.0 meters at a projection angle of 
 # 37 degrees above horizon at 15 m/s
 v0_mp2 = 15
-ang0_deg = 37
+ang0_deg = 30
 ang0_rad = ang0_deg * const.pi / 180.0
 
 # NOTE: POSITIVE value is backspin
-w_radpsec = 2.0 * (2.0 * const.pi)  
+revpersec = 1.0
+w_radpsec = revpersec * (2.0 * const.pi)  
 
-s0 = [0.0,
-      2.0,
-      v0_mp2 * math.cos(ang0_rad),
-      v0_mp2 * math.sin(ang0_rad)]
+s0 = [0.0, #px
+      0.75, #py
+      v0_mp2 * math.cos(ang0_rad), #vx
+      v0_mp2 * math.sin(ang0_rad)] #vy
 
 t0 = 0.0
 dt = 0.01
@@ -302,7 +304,7 @@ Fy[0,beach_index]   = F(vy[0,beach_index],Cd, A_beach_m2, V_beach_m3, rho_kgpm3)
 # We'll explain that some other day
 
 myInt = ode(f).set_integrator('dopri5')
-myInt.set_initial_value(s0, t0).set_f_params(Cd, A_shotput_m2, V_shotput_m3, m_shotput_kg, rho_kgpm3, rho_shotput_kgpm3, r_shotput_m, w_radpsec)
+myInt.set_initial_value(s0).set_f_params(Cd, A_shotput_m2, V_shotput_m3, m_shotput_kg, rho_kgpm3, rho_shotput_kgpm3, r_shotput_m, w_radpsec)
 
 # Run the integrator until the shot put hits the ground
 # Note: While I like using the variable 's' for state, the integrator
@@ -322,7 +324,7 @@ while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and i < len(ts):
     i = i + 1
 
 # Change the parameters to run the integrator on the plastic ball-like object
-myInt.set_initial_value(s0, t0).set_f_params(Cd, A_plastic_m2, V_plastic_m3, m_plastic_kg, rho_kgpm3, rho_plastic_kgpm3, r_plastic_m, w_radpsec)
+myInt.set_initial_value(s0).set_f_params(Cd, A_plastic_m2, V_plastic_m3, m_plastic_kg, rho_kgpm3, rho_plastic_kgpm3, r_plastic_m, w_radpsec)
 
 # Run the integrator until the plastic hits the ground
 j = 1
@@ -339,7 +341,7 @@ while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and j < len(ts):
     j = j + 1
 
 # Change the parameters to run the integrator on the beach ball
-myInt.set_initial_value(s0, t0).set_f_params(Cd, A_beach_m2, V_beach_m3, m_beach_kg, rho_kgpm3, rho_beach_kgpm3, r_beach_m, w_radpsec)
+myInt.set_initial_value(s0).set_f_params(Cd, A_beach_m2, V_beach_m3, m_beach_kg, rho_kgpm3, rho_beach_kgpm3, r_beach_m, w_radpsec)
 
 # Run the integrator until the beach ball hits the ground
 k = 1
@@ -361,11 +363,11 @@ pl.grid()
 pl.plot(px[0:i,shotput_index],py[0:i,shotput_index],
         px[0:j,plastic_index],py[0:j,plastic_index],
         px[0:k,beach_index],  py[0:k,beach_index])
-pl.title('Trajectory')
+pl.title('Trajectory: No Spin, Bouyancy = ON')
 pl.xlabel('meters')
 pl.ylabel('meters')
 pl.legend(['Shot Put',
-           'plastic',
+           'FIRST',
            'Beach'])
 
 pl.figure(2)
@@ -382,8 +384,8 @@ pl.xlabel('time (s)')
 pl.ylabel('speed (m/s)')
 pl.legend(['Shot Put vx',
            'Shot Put vy', 
-           'plastic vx', 
-           'plastic vy', 
+           'FIRST vx', 
+           'FIRST vy', 
            'Beach vx', 
            'Beach vy'])
 
@@ -401,8 +403,8 @@ pl.xlabel('time (s)')
 pl.ylabel('drag (N)')
 pl.legend(['Shot Put Fx',
            'Shot Put Fy', 
-           'plastic Fx', 
-           'plastic Fy',
+           'FIRST Fx', 
+           'FIRST Fy',
            'Beach Fx', 
            'Beach Fy'])
 		   
