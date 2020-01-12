@@ -143,8 +143,12 @@ def Fdrag(v,Cd,A,rho):
 """
 Fbouyancy is the bouyant force of an object in the fluid
 """
+bouy = True
 def Fbouyancy(V,rho):
-    return rho*V*const.g
+    if (bouy):
+        return rho*V*const.g
+    else: 
+        return 0
 
 """
 Fmagnus is the magnus force on the spinning ball
@@ -244,12 +248,12 @@ rho_beach_kgpm3 = m_beach_kg/V_beach_m3
 # https://www.brunel.ac.uk/~spstnpl/BiomechanicsAthletics/ShotPut.htm
 # Start the shot put at 2.0 meters at a projection angle of 
 # 37 degrees above horizon at 15 m/s
-v0_mp2 = 15
+v0_mp2 = 12
 ang0_deg = 30
 ang0_rad = ang0_deg * const.pi / 180.0
 
 # NOTE: POSITIVE value is backspin
-revpersec = 1.0
+revpersec = 2.0
 w_radpsec = revpersec * (2.0 * const.pi)  
 
 s0 = [0.0, #px
@@ -328,12 +332,16 @@ myInt.set_initial_value(s0).set_f_params(Cd, A_plastic_m2, V_plastic_m3, m_plast
 
 # Run the integrator until the plastic hits the ground
 j = 1
+apogee = False
 while myInt.successful() and myInt.t < tstop and myInt.y[1] > 0 and j < len(ts):
     myInt.integrate(myInt.t + dt)
     px[j,plastic_index] = myInt.y[0]
     py[j,plastic_index] = myInt.y[1]
     vx[j,plastic_index] = myInt.y[2]
     vy[j,plastic_index] = myInt.y[3]
+    if ((apogee == False) and py[j, plastic_index] - py[j-1, plastic_index] < 0):
+        print("Apogee at ",py[j-1,plastic_index])
+        apogee = True
     qx[j,plastic_index] = q(vx[j,plastic_index],rho_kgpm3)
     qy[j,plastic_index] = q(vy[j,plastic_index],rho_kgpm3)
     Fx[j,plastic_index] = Fdrag(vx[j,plastic_index],Cd, A_plastic_m2, rho_kgpm3)
@@ -363,49 +371,49 @@ pl.grid()
 pl.plot(px[0:i,shotput_index],py[0:i,shotput_index],
         px[0:j,plastic_index],py[0:j,plastic_index],
         px[0:k,beach_index],  py[0:k,beach_index])
-pl.title('Trajectory: No Spin, Bouyancy = ON')
+pl.title('Trajectory: spin = '+str(revpersec)+' bouyancy = '+str(bouy))
 pl.xlabel('meters')
 pl.ylabel('meters')
 pl.legend(['Shot Put',
            'FIRST',
            'Beach'])
 
-pl.figure(2)
-pl.cla()
-pl.grid()
-pl.plot(ts[0:i],vx[0:i,shotput_index],
-        ts[0:i],vy[0:i,shotput_index],
-        ts[0:j],vx[0:j,plastic_index],
-        ts[0:j],vy[0:j,plastic_index],
-        ts[0:k],vx[0:k,beach_index],
-        ts[0:k],vy[0:k,beach_index])
-pl.title('Speed Components')
-pl.xlabel('time (s)')
-pl.ylabel('speed (m/s)')
-pl.legend(['Shot Put vx',
-           'Shot Put vy', 
-           'FIRST vx', 
-           'FIRST vy', 
-           'Beach vx', 
-           'Beach vy'])
+# pl.figure(2)
+# pl.cla()
+# pl.grid()
+# pl.plot(ts[0:i],vx[0:i,shotput_index],
+#         ts[0:i],vy[0:i,shotput_index],
+#         ts[0:j],vx[0:j,plastic_index],
+#         ts[0:j],vy[0:j,plastic_index],
+#         ts[0:k],vx[0:k,beach_index],
+#         ts[0:k],vy[0:k,beach_index])
+# pl.title('Speed Components')
+# pl.xlabel('time (s)')
+# pl.ylabel('speed (m/s)')
+# pl.legend(['Shot Put vx',
+#            'Shot Put vy', 
+#            'FIRST vx', 
+#            'FIRST vy', 
+#            'Beach vx', 
+#            'Beach vy'])
 
-pl.figure(3)
-pl.cla()
-pl.grid()
-pl.plot(ts[0:i],Fx[0:i,shotput_index],
-        ts[0:i],Fy[0:i,shotput_index],
-        ts[0:j],Fx[0:j,plastic_index],
-        ts[0:j],Fy[0:j,plastic_index],
-        ts[0:k],Fx[0:k,beach_index],
-        ts[0:k],Fy[0:k,beach_index])
-pl.title('Drag Components')
-pl.xlabel('time (s)')
-pl.ylabel('drag (N)')
-pl.legend(['Shot Put Fx',
-           'Shot Put Fy', 
-           'FIRST Fx', 
-           'FIRST Fy',
-           'Beach Fx', 
-           'Beach Fy'])
+# pl.figure(3)
+# pl.cla()
+# pl.grid()
+# pl.plot(ts[0:i],Fx[0:i,shotput_index],
+#         ts[0:i],Fy[0:i,shotput_index],
+#         ts[0:j],Fx[0:j,plastic_index],
+#         ts[0:j],Fy[0:j,plastic_index],
+#         ts[0:k],Fx[0:k,beach_index],
+#         ts[0:k],Fy[0:k,beach_index])
+# pl.title('Drag Components')
+# pl.xlabel('time (s)')
+# pl.ylabel('drag (N)')
+# pl.legend(['Shot Put Fx',
+#            'Shot Put Fy', 
+#            'FIRST Fx', 
+#            'FIRST Fy',
+#            'Beach Fx', 
+#            'Beach Fy'])
 		   
 pl.show()
