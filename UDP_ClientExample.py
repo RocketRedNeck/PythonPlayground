@@ -76,6 +76,17 @@ SOFTWARE.
 ******************************************************************************
 ******************************************************************************
 """
+import argparse
+parser = argparse.ArgumentParser(description='UDP Client Example')
+parser.add_argument('--addr', 
+                    default='0.0.0.0',
+                    type=str, 
+                    help='Interface Address (default=0.0.0.0 "any")')
+parser.add_argument('--port',
+                    default=53431,
+                    type=int, 
+                    help='Receiving Port (default=54321')
+args = parser.parse_args()
 
 # "Sockets" are the interface developed in the mists of history to connect two
 # points of a communication exchange. You can find a socket implementation in
@@ -122,29 +133,7 @@ import socket
 #   will discuss later, in a different example.
 #
 
-IP_ANY          = '0.0.0.0'         # Some implementations signify 'any' as ''
-                                    # This 'any' address is usually used by receivers
-                                    # to 'bind' to whatever address has been assigned
-                                    # to the local NIC
-
-IP_LOOPBACK     = '127.0.0.1'       # Loopback to self, usually used by senders
-                                    # to prevent transmission outside the machine
-                                    # Can be used by receivers to bind to internal routes
-
-IP_MY_INTERFACE = '192.168.0.103'   # Address of **this** machine's NIC assigned by router
-                                    # Actual address may be dynamic (changing each
-                                    # the machine boots) or static (same every time)
-                                    # Either way, the assigned address is the route
-                                    # the sender requires to reach here. Being more
-                                    # flexible on this address requires that other
-                                    # paths allow for an address exchange, typically
-                                    # along the multicast or broadcast path.
-                                    # Binding to this interface address is required when
-                                    # multiple NICs are present in the machine
-                                    # and it is necessary to isolate the physical
-                                    # paths (i.e., 'any' is not really appropriate)
-
-IP_BIND_ADDRESS = IP_ANY            # The interface I want to bind with for this demo
+IP_BIND_ADDRESS = args.addr         # The interface I want to bind with for this demo
 
 # So a few words about ports.
 #
@@ -168,7 +157,7 @@ IP_BIND_ADDRESS = IP_ANY            # The interface I want to bind with for this
 #
 # We just need to pick a port to keep traffic separated for our purposes
 
-PORT = 53421                        # Just a number I know is not being used
+PORT = args.port                    # Just a number I know is not being used
                                     # on this machine.
 
 # To make this 'application' robust we desire that the communication keep trying
@@ -292,7 +281,7 @@ while (True):
             # In order to print the data out in Python we need to decode
             # the bytes into a string (otherwise the b'string' will display)
             data = data.decode("utf-8")
-            print(data + " <----- " + str(address))
+            print(data + " <----- " + str(address[0]) + ":" + str(address[1]))
             if (data == ''):
                 break
         except socket.timeout:

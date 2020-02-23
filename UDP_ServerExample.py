@@ -76,6 +76,19 @@ SOFTWARE.
 ******************************************************************************
 ******************************************************************************
 """
+
+import argparse
+parser = argparse.ArgumentParser(description='UDP Server Example')
+parser.add_argument('--addr', 
+                    default='127.0.0.1',
+                    type=str, 
+                    help='Destination Address (default=127.0.0.1)')
+parser.add_argument('--port',
+                    default=53431,
+                    type=int, 
+                    help='Destination Port (default=54321')
+args = parser.parse_args()
+
 # "Sockets" are the interface developed in the mists of history to connect two
 # points of a communication exchange. You can find a socket implementation in
 # just about every system-level language (like C, C++, C#, java, python, etc.)
@@ -109,6 +122,8 @@ import socket
 #   Some addresses are special, defined in various standards to mean
 #   specific things to the network (https://en.wikipedia.org/wiki/Reserved_IP_addresses)
 #
+#   The standard 'any" address is '0.0.0.0' and used only for receiver binding
+#
 #   The standard loopback address (talk to self) is '127.0.0.1'
 #
 #   A typical Ethernet router (gateway) at '192.168.0.1' will assign your 
@@ -121,29 +136,7 @@ import socket
 #   will discuss later, in a different example.
 #
 
-IP_ANY          = '0.0.0.0'         # Some implementations signify 'any' as ''
-                                    # This 'any' address is usually used by receivers
-                                    # to 'bind' to whatever address has been assigned
-                                    # to the local NIC
-
-IP_LOOPBACK     = '127.0.0.1'       # Loopback to self, usually used by senders
-                                    # to prevent transmission outside the machine
-                                    # Can be used by receivers to bind to internal routes
-
-IP_MY_INTERFACE = '192.168.0.11'    # Address of **this** machine's NIC assigned by router
-                                    # Actual address may be dynamic (changing each
-                                    # the machine boots) or static (same every time)
-                                    # Either way, the assigned address is the route
-                                    # the sender requires to reach here. Being more
-                                    # flexible on this address requires that other
-                                    # paths allow for an address exchange, typically
-                                    # along the multicast or broadcast path.
-                                    # Binding to this interface address is required when
-                                    # multiple NICs are present in the machine
-                                    # and it is necessary to isolate the physical
-                                    # paths (i.e., 'any' is not really appropriate)
-
-IP_DEST_ADDRESS = IP_LOOPBACK       # The interface I want to send to for this demo
+IP_DEST_ADDRESS = args.addr     # The interface I want to send to for this demo
 
 # So a few words about ports.
 #
@@ -167,8 +160,8 @@ IP_DEST_ADDRESS = IP_LOOPBACK       # The interface I want to send to for this d
 #
 # We just need to pick a port to keep traffic separated for our purposes
 
-PORT = 53421                        # Just a number I know is not being used
-                                    # on this machine.PORT = 53421
+DEST_PORT = args.port               # Just a number I know is not being used
+                                    # on this machine.
 
 # To make this 'application' robust we desire that the communication keep trying
 # no matter some internal problem. For this reason there are two loops below.
@@ -209,12 +202,12 @@ while (True):
         try:
             i = i + 1
             sn = str(i+1)
-            s = '-----> ' + sn
+            s = '----> ' + IP_DEST_ADDRESS + ':' + str(DEST_PORT) + ' = ' + sn
             print(s)
             # Python requires a little bit of endcode/decode logic to ensure
             # that only the data bytes are sent
             sn = sn.encode("utf-8")
-            mySocket.sendto(sn, (IP_DEST_ADDRESS, PORT))
+            mySocket.sendto(sn, (IP_DEST_ADDRESS, DEST_PORT))
         except Exception as e:
             print(e)
             sendOk= False
