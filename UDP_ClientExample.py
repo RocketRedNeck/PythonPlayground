@@ -256,12 +256,11 @@ while (True):
     
     print("Binding to IP = '" + IP_BIND_ADDRESS + "' on PORT = " + str(PORT))
     
-    mySocket.bind((IP_BIND_ADDRESS, PORT))
-    
     # Allow the address/port pair to be reused by other processes
     mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    
+    mySocket.bind((IP_BIND_ADDRESS, PORT))
+        
     # Set a timeout so the socket does not block indefinitely when trying
     # to receive data. Without this the socket will block 'forever' and
     # stopping the process by simple commands becomes difficult, usually
