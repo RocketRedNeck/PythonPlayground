@@ -131,7 +131,7 @@ IP_LOOPBACK     = '127.0.0.1'       # Loopback to self, usually used by senders
                                     # to prevent transmission outside the machine
                                     # Can be used by receivers to bind to internal routes
 
-IP_MY_INTERFACE = '192.168.0.11'    # Address of **this** machine's NIC assigned by router
+IP_MY_INTERFACE = '192.168.0.103'   # Address of **this** machine's NIC assigned by router
                                     # Actual address may be dynamic (changing each
                                     # the machine boots) or static (same every time)
                                     # Either way, the assigned address is the route
@@ -286,13 +286,13 @@ while (True):
     timeoutCount= 0
     while (True):
         try:
-            data = mySocket.recv(1024)
+            data, address = mySocket.recvfrom(1024)
             timeoutCount = 0
             
             # In order to print the data out in Python we need to decode
             # the bytes into a string (otherwise the b'string' will display)
             data = data.decode("utf-8")
-            print(data + " <-----")
+            print(data + " <----- " + str(address))
             if (data == ''):
                 break
         except socket.timeout:
