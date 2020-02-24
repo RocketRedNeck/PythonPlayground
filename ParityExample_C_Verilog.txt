@@ -1,0 +1,28 @@
+
+// Generate the parity of a byte
+char generate_parity (char byte);
+{
+char parity; // Contains the current parity value
+char bit; // Contains the bit being looked at
+char pos; // Bit position in the byte
+parity = 0;
+for (pos=0; pos<8; pos++) // For each bit in the byte
+  {
+  bit = byte >> pos; // Shift bit into position
+  bit &= 0x1; // Mask out the rest of the byte
+  parity ^= bit; // Exclusive OR with parity
+  }
+return (parity);
+}
+
+
+module parity(
+    Data,
+    Parity
+  );
+  input [7:0] Data;
+  output Parity;
+  assign Parity = Data[0]^Data[1]^Data[2]^Data[3]^
+                  Data[4]^Data[5]^Data[6]^Data[7];
+endmodule
+
