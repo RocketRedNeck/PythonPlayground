@@ -72,4 +72,4 @@ plot.grid()
 for B in Bs:
     plot.plot(Es,dfde(B,Es))
 
-
+plot.show()

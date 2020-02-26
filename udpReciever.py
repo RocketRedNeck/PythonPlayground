@@ -21,16 +21,15 @@ sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
 # The address for the multi-cast group is the third param
 status = sock.setsockopt(socket.IPPROTO_IP,
 socket.IP_ADD_MEMBERSHIP,
-socket.inet_aton(MCAST_ADDR) + socket.inet_aton(ANY));
+socket.inet_aton(MCAST_ADDR) + socket.inet_aton(ANY))
 
 sock.setblocking(0)
 ts = time.time()
 while True:
     try:
         data, addr = sock.recvfrom(1024)
-    except socket.error, e:
-        pass
-    else:
-        print "We got data!"
-        print "FROM: ", addr
-        print "DATA: ", data
+        print("We got data!")
+        print("FROM: ", addr)
+        print("DATA: ", data)
+    except socket.error as e:
+        print(e)

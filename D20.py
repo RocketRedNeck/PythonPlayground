@@ -41,6 +41,7 @@ minDie = np.min(diePair,0)
 pl.figure(4)
 pl.hist(minDie,50)
 pl.grid()
+pl.show()
 
 avg_min = np.average(minDie)
 print("Minimum = ", avg_min)

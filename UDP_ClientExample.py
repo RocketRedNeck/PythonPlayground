@@ -97,7 +97,7 @@ args = parser.parse_args()
 # the basic concepts are the same.
 #   1. import or include your socket interface
 #   2. instantiate a socket with the family, type, and protocol you need
-#   3. configure any special options
+#   3. configure any special options (setsockopt)
 #   4. send/receive using the steps required for the selected protocol
 
 import socket

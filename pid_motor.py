@@ -33,7 +33,7 @@ import matplotlib.pyplot as plot
 import numpy as np
 import math
 
-tmax = 6.0
+tmax = 3.0
 dt = 0.01
 ts = np.arange(0.0, tmax, dt)
 pvs = np.zeros(len(ts))
@@ -123,6 +123,7 @@ plot.figure(1)
 plot.cla()
 plot.grid()
 plot.plot(ts,sps,ts,pvs)
+plot.show()
     
     
     

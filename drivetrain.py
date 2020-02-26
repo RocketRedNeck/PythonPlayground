@@ -181,4 +181,5 @@ if __name__ == '__main__':
     plot.grid()
     plot.plot(ts,x,ts,V,ts,a,ts,slipping,ts,Vm,ts,A/10)
     plot.legend(['x','V','a','slipping','Volts','Amps/10'])
+    plot.show()
 
