@@ -128,32 +128,32 @@ lblText.config(background="light grey", foreground="black",
 
 def tick(name):
     i = 0
-    while (True):
+    running = True
+    while (running):
         try:
             lblText.insert(tk.END, str(i)+'\n')
             lblText.yview(tk.END)
             i+=1
+            print(i)
             time.sleep(0.1)
         except Exception as e:
             if 'main thread is not in main loop' in repr(e):
+                running = False
                 break
             else:
+                print(e)
                 raise e
 
 x = threading.Thread(target=tick, args=(1,))
 x.start()
 
 def _delete_window():
-    print("delete_window")
     try:
+        master.quit()
         master.destroy()
     except:
         pass
 
-def _destroy(event):
-    print("destroy")
-
 master.protocol("WM_DELETE_WINDOW", _delete_window)
-#master.bind("<Destroy>", _destroy)
 
 master.mainloop() 
