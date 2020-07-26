@@ -76,6 +76,7 @@ SOFTWARE.
 ******************************************************************************
 ******************************************************************************
 """
+import time
 import argparse
 parser = argparse.ArgumentParser(description='UDP Client Example')
 parser.add_argument('--addr', 
@@ -83,9 +84,9 @@ parser.add_argument('--addr',
                     type=str, 
                     help='Interface Address (default=0.0.0.0 "any")')
 parser.add_argument('--port',
-                    default=53431,
+                    default=5123,
                     type=int, 
-                    help='Receiving Port (default=54321')
+                    help='Receiving Port (default=5123')
 args = parser.parse_args()
 
 # "Sockets" are the interface developed in the mists of history to connect two
@@ -97,7 +98,7 @@ args = parser.parse_args()
 # the basic concepts are the same.
 #   1. import or include your socket interface
 #   2. instantiate a socket with the family, type, and protocol you need
-#   3. configure any special options (setsockopt)
+#   3. configure any special options
 #   4. send/receive using the steps required for the selected protocol
 
 import socket
@@ -259,6 +260,10 @@ while (True):
     # Allow the address/port pair to be reused by other processes
     mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
+    print(f'{mySocket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}')
+    mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 * 1024 * 10)
+    print(f'{mySocket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}')
+
     mySocket.bind((IP_BIND_ADDRESS, PORT))
         
     # Set a timeout so the socket does not block indefinitely when trying
@@ -272,17 +277,30 @@ while (True):
     mySocket.settimeout(0.2)
     
     timeoutCount= 0
+    count = 0
+    lastsn = 0
+    lostcount = 0
     while (True):
         try:
-            data, address = mySocket.recvfrom(1024)
+            data, address = mySocket.recvfrom(65535)
             timeoutCount = 0
+            count += 1
             
             # In order to print the data out in Python we need to decode
             # the bytes into a string (otherwise the b'string' will display)
             data = data.decode("utf-8")
-            print(data + " <----- " + str(address[0]) + ":" + str(address[1]))
             if (data == ''):
                 break
+
+            i = data.find('*')
+            sn = data[0:i]
+            if count == 1:
+                lastsn = int(sn)
+            elif lastsn != int(sn) - 1:
+                print("    SKIP DETECTED!!!")
+                lostcount += (int(sn) - lastsn - 1)
+            print(sn + " <----- " + str(address[0]) + ":" + str(address[1]) + "  : lost = " + str(lostcount) + " : rcvbuf = " + str(mySocket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)))
+            lastsn = int(sn)
         except socket.timeout:
             timeoutCount = timeoutCount + 1
             print("Timeout " + str(timeoutCount))

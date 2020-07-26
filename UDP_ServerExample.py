@@ -84,9 +84,9 @@ parser.add_argument('--addr',
                     type=str, 
                     help='Destination Address (default=127.0.0.1)')
 parser.add_argument('--port',
-                    default=53431,
+                    default=5123,
                     type=int, 
-                    help='Destination Port (default=54321')
+                    help='Destination Port (default=5123')
 args = parser.parse_args()
 
 # "Sockets" are the interface developed in the mists of history to connect two
@@ -206,6 +206,7 @@ while (True):
             print(s)
             # Python requires a little bit of endcode/decode logic to ensure
             # that only the data bytes are sent
+            sn += (32768 - len(sn)) * '*'
             sn = sn.encode("utf-8")
             mySocket.sendto(sn, (IP_DEST_ADDRESS, DEST_PORT))
         except Exception as e:

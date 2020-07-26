@@ -133,7 +133,7 @@ while (True):
         sendOk = True
         if (data == 'Go'):
             print("Serving...")
-            i = 0;
+            i = 0
             while (True):
                 try:
                     i = i + 1

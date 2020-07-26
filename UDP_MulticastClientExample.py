@@ -34,13 +34,13 @@ SOFTWARE.
 import socket
 import struct
 
-IP_ANY = ''
+IP_ANY = '192.168.88.170'
 IP_LOOPBACK = '127.0.0.1'
 IP_LOCAL = IP_ANY
 
-IP_MULTICAST_GROUP_A = '230.0.0.1'
+IP_MULTICAST_GROUP_A = '224.100.0.1'
 
-PORT = 54321
+PORT = 9999
 
 while (True):
     mySocket  = socket.socket(family=socket.AF_INET,

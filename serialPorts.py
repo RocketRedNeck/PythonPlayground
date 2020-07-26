@@ -33,7 +33,10 @@ def listPorts():
         try:
             s = serial.Serial(port)
             s.close()
+            print(port)
             result.append(port)
         except (OSError, serial.SerialException):
             pass
     return result
+
+print("Ports =", listPorts())
