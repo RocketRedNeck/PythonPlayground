@@ -78,6 +78,7 @@ SOFTWARE.
 """
 
 import argparse
+import time
 
 default_ipaddr = '127.0.0.1'  # Loopback
 default_port = 54321
@@ -92,6 +93,10 @@ parser.add_argument('--port',
                     default=default_port,
                     type=int, 
                     help=f'Destination Port (default={default_port}')
+parser.add_argument('--delay',
+                    default=0,
+                    type=float, 
+                    help=f'delay (busy wait) between sending frames (default = 0)')
 args = parser.parse_args()
 
 # "Sockets" are the interface developed in the mists of history to connect two
@@ -203,17 +208,40 @@ while (True):
     print("Sending...")
 
     i = 0
+    starttime_sec = time.time()
+    lasttime_sec = starttime_sec
+    nexttime_sec = starttime_sec + 1.0
+    lasti = 0
+    avgips = 0.0
     while (True):
         try:
             i = i + 1
+            
+            now_sec = time.time()
+            if (now_sec >= nexttime_sec):
+                nexttime_sec += 1.0
+                
+                dt = now_sec - lasttime_sec
+                lasttime_sec = now_sec
+                if (dt > 0.0):
+                    avgips = float(i - lasti)/dt
+                else:
+                    avgips = 0.0
+                lasti = i
+                    
             sn = str(i+1)
-            s = '----> ' + IP_DEST_ADDRESS + ':' + str(DEST_PORT) + ' = ' + sn
+            s = f'----> {IP_DEST_ADDRESS}:{DEST_PORT} = {sn} ({avgips:6.0f} Hz)'
             print(s)
             # Python requires a little bit of endcode/decode logic to ensure
             # that only the data bytes are sent
             sn += (32768 - len(sn)) * '*'
             sn = sn.encode("utf-8")
             mySocket.sendto(sn, (IP_DEST_ADDRESS, DEST_PORT))
+            if args.delay > 0:
+                now_sec = time.time()
+                while (time.time() - now_sec < args.delay):
+                    pass
+            
         except Exception as e:
             print(e)
             sendOk= False

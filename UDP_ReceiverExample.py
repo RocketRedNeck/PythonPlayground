@@ -81,16 +81,30 @@ import argparse
 
 default_ipaddr = '0.0.0.0'  # Any
 default_port = 54321
+default_bufsize = 10*1024*1024
 
 parser = argparse.ArgumentParser(description='UDP Client Example')
 parser.add_argument('--addr', 
                     default=default_ipaddr,
                     type=str, 
-                    help=f'Interface Address (default={default_ipaddr} "any")')
+                    help=f'Interface Address (default={default_ipaddr})')
 parser.add_argument('--port',
                     default=default_port,
                     type=int, 
-                    help=f'Receiving Port (default={default_port}')
+                    help=f'Receiving Port (default={default_port})')
+parser.add_argument('--size',
+                    default=default_bufsize,
+					type=int,
+					help=f'Socket Buffer Size (default={default_bufsize})')
+parser.add_argument('--delay',
+                    default=0,
+                    type=float, 
+                    help=f'delay (busy wait) every --delaymod frames (default = 0)')
+parser.add_argument('--delaymod',
+                    default=1,
+                    type=int, 
+                    help=f'modulo when to apply --delay when delay > 0 (default = 1)')
+                    
 args = parser.parse_args()
 
 # "Sockets" are the interface developed in the mists of history to connect two
@@ -264,9 +278,15 @@ while (True):
     # Allow the address/port pair to be reused by other processes
     mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    print(f'{mySocket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}')
-    mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 * 1024 * 10)
-    print(f'{mySocket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}')
+    # The size of the receive buffer determines how much data can backlog
+	# in the socket if the process get preempted.
+	# *********************************************************************
+	# *********************************************************************
+	# REMEMBER: UDP offers no guarantees
+	# *********************************************************************
+	# *********************************************************************
+    mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, args.size)
+    print(mySocket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
 
     mySocket.bind((IP_BIND_ADDRESS, PORT))
         
@@ -284,12 +304,35 @@ while (True):
     count = 0
     lastsn = 0
     lostcount = 0
+    
+    starttime_sec = time.time()
+    lasttime_sec = starttime_sec
+    nexttime_sec = starttime_sec + 1.0
+    lastcount = 0
+    avgips = 0.0
+    
     while (True):
         try:
-            data, address = mySocket.recvfrom(65535)
+            data, address = mySocket.recvfrom(65535)  # packets will never be bigger than this, and will actually be smaller
+            datasize = len(data)
+            if (starttime_sec == 0):
+                starttime_sec = time.time()
+
             timeoutCount = 0
             count += 1
-            
+
+            now_sec = time.time()
+            if (now_sec >= nexttime_sec):
+                nexttime_sec += 1.0
+                
+                dt = now_sec - lasttime_sec
+                lasttime_sec = now_sec
+                if (dt > 0.0):
+                    avgips = float(count - lastcount)/dt
+                else:
+                    avgips = 0.0
+                lastcount = count
+                            
             # In order to print the data out in Python we need to decode
             # the bytes into a string (otherwise the b'string' will display)
             data = data.decode("utf-8")
@@ -303,11 +346,20 @@ while (True):
             elif lastsn != int(sn) - 1:
                 print("    SKIP DETECTED!!!")
                 lostcount += (int(sn) - lastsn - 1)
-            print(sn + " <----- " + str(address[0]) + ":" + str(address[1]) + "  : lost = " + str(lostcount) + " : rcvbuf = " + str(mySocket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)))
+            print(f'{sn} <----- {address[0]}:{address[1]}  : lost = {lostcount} ({100*lostcount/int(sn):3.0f} %) : rcvbuf = {args.size} ({int(args.size/datasize)} pkts) ({avgips:6.0f} Hz)')
             lastsn = int(sn)
+            
+            if args.delaymod > 0 and args.delay > 0.0:
+                if count % args.delaymod == 0:
+                    now_sec = time.time()
+                    while (time.time() - now_sec < args.delay):
+                        pass
+                        
         except socket.timeout:
             timeoutCount = timeoutCount + 1
             print("Timeout " + str(timeoutCount))
+            lostcount = 0
+            count = 0
         except Exception as e:
             print(e)
             break
