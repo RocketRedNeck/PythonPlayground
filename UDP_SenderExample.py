@@ -82,7 +82,7 @@ import time
 
 default_ipaddr = '127.0.0.1'  # Loopback
 default_port = 54321
-
+default_pktsize = 32*1024
 
 parser = argparse.ArgumentParser(description='UDP Sender Example')
 parser.add_argument('--addr', 
@@ -93,6 +93,10 @@ parser.add_argument('--port',
                     default=default_port,
                     type=int, 
                     help=f'Destination Port (default={default_port}')
+parser.add_argument('--pktsize',
+                    default=default_pktsize,
+                    type=int, 
+                    help=f'Packet Size (default={default_pktsize})')
 parser.add_argument('--delay',
                     default=0,
                     type=float, 
@@ -234,7 +238,7 @@ while (True):
             print(s)
             # Python requires a little bit of endcode/decode logic to ensure
             # that only the data bytes are sent
-            sn += (32768 - len(sn)) * '*'
+            sn += (args.pktsize - len(sn)) * '*'
             sn = sn.encode("utf-8")
             mySocket.sendto(sn, (IP_DEST_ADDRESS, DEST_PORT))
             if args.delay > 0:
