@@ -34,7 +34,7 @@ SOFTWARE.
 import socket
 import struct
 
-IP_ANY = '192.168.88.170'
+IP_ANY = '0.0.0.0'
 IP_LOOPBACK = '127.0.0.1'
 IP_LOCAL = IP_ANY
 

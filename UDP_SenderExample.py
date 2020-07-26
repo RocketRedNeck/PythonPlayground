@@ -78,15 +78,20 @@ SOFTWARE.
 """
 
 import argparse
+
+default_ipaddr = '127.0.0.1'  # Loopback
+default_port = 54321
+
+
 parser = argparse.ArgumentParser(description='UDP Server Example')
 parser.add_argument('--addr', 
-                    default='127.0.0.1',
+                    default=default_ipaddr,
                     type=str, 
-                    help='Destination Address (default=127.0.0.1)')
+                    help=f'Destination Address (default={default_ipaddr})')
 parser.add_argument('--port',
-                    default=5123,
+                    default=default_port,
                     type=int, 
-                    help='Destination Port (default=5123')
+                    help=f'Destination Port (default={default_port}')
 args = parser.parse_args()
 
 # "Sockets" are the interface developed in the mists of history to connect two

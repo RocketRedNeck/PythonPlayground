@@ -78,15 +78,19 @@ SOFTWARE.
 """
 import time
 import argparse
+
+default_ipaddr = '0.0.0.0'  # Any
+default_port = 54321
+
 parser = argparse.ArgumentParser(description='UDP Client Example')
 parser.add_argument('--addr', 
-                    default='0.0.0.0',
+                    default=default_ipaddr,
                     type=str, 
-                    help='Interface Address (default=0.0.0.0 "any")')
+                    help=f'Interface Address (default={default_ipaddr} "any")')
 parser.add_argument('--port',
-                    default=5123,
+                    default=default_port,
                     type=int, 
-                    help='Receiving Port (default=5123')
+                    help=f'Receiving Port (default={default_port}')
 args = parser.parse_args()
 
 # "Sockets" are the interface developed in the mists of history to connect two
