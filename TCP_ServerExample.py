@@ -30,8 +30,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. 
 ****************************************************************************************************
 """
-
+import argparse
 import socket
+import time
+
+default_ipaddr = '0.0.0.0'  # Any
+default_port = 54321
+default_pktsize = 256
+
+parser = argparse.ArgumentParser(description='TCP Server Example')
+parser.add_argument('--addr', 
+                    default=default_ipaddr,
+                    type=str, 
+                    help=f'Interface Address (default={default_ipaddr})')
+parser.add_argument('--port',
+                    default=default_port,
+                    type=int, 
+                    help=f'Server Port (default={default_port})')
+parser.add_argument('--pktsize',
+                    default=default_pktsize,
+                    type=int, 
+                    help=f'Packet Size (default={default_pktsize})')
+                    
+args = parser.parse_args()
 
 # IP Addresses are used by the network hardware to route traffic
 # It is just like having a house address or zip code
@@ -55,9 +76,7 @@ import socket
 #
 #   '224.0.0.0' to '239.255.255.255' is reserved for multicast
 #
-IP_ANY = ''     # In this case we don't care what address our hardware has
-IP_LOOPBACK = '127.0.0.1'
-IP_LOCAL = IP_ANY
+IF_ADDR = args.addr
 
 # Ports are a way of distinguishing the type of information traffic on a
 # netowrk. The port is simply a logical distinction that allows traffic to
@@ -74,7 +93,9 @@ IP_LOCAL = IP_ANY
 # We just need to pick a port to start listening for connections
 # then we will let the system assign connections to a new port to
 # keep traffic separated
-PORT = 53421
+PORT = args.port
+
+timeoutcount = 0
 
 while (True):
     # A listening socket is an object we will use to listen for
@@ -102,8 +123,8 @@ while (True):
     #
     # Ports are a way of identifying packets to be routed to specific
     # user path on an interface
-    print("Binding...")
-    listeningSocket.bind((IP_LOCAL, PORT))
+    print(f'Binding to {IF_ADDR}:{PORT}')
+    listeningSocket.bind((IF_ADDR, PORT))
     
     # Now we set up listening to wait for a connection request
     # We set the backlog to 0 to allow up to 0 unaccepted connection
@@ -124,6 +145,7 @@ while (True):
         listeningSocket.close() # For this example we don't need to keep this
         
         acceptedSocket.settimeout(1.0)
+        
         data = acceptedSocket.recv(1024)
         if not data:
             raise Exception("Socket Receive Failure")
@@ -133,20 +155,44 @@ while (True):
         sendOk = True
         if (data == 'Go'):
             print("Serving...")
+            acceptedSocket.settimeout(10.0)
             i = 0
+
+            starttime_sec = time.time()
+            lasttime_sec = starttime_sec
+            nexttime_sec = starttime_sec + 1.0
+            lasti = 0
+            avgips = 0.0
+
             while (True):
                 try:
                     i = i + 1
-                    
+
+                    now_sec = time.time()
+                    if (now_sec >= nexttime_sec):
+                        nexttime_sec += 1.0
+                        
+                        dt = now_sec - lasttime_sec
+                        lasttime_sec = now_sec
+                        if (dt > 0.0):
+                            avgips = float(i - lasti)/dt
+                        else:
+                            avgips = 0.0
+                        lasti = i
+                     
                     # Because we are sending into a stream it
                     # is up to us to define where the "message" or
                     # data boundaries are... in this simple exmaple
                     # we just use '*' to identify the end of our "message"
                     # This allows the client to dice up the data on some
                     # boundry as it receives the stream
-                    s = 'String = ' + str(i + 1) + '*'
+                    sn = str(i + 1)
+                    s = f'----> {sn} ({avgips:6.0f} Hz)'
                     print(s)
+
+                    s = sn + '<----- ' + (args.pktsize - len(sn) - 1) * '!' + '*'
                     acceptedSocket.send(str.encode(s))
+
                 except Exception as e:
                     print(e)
                     sendOk= False
@@ -159,7 +205,8 @@ while (True):
         print("Closing Service...")       
         acceptedSocket.close()
     except socket.timeout:
-        print("Server Detected Timeout")
+        timeoutcount += 1
+        print(f"Server Detected Timeout {timeoutcount}")
     except Exception as e:
         print(e)
         

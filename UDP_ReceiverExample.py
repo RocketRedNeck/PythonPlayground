@@ -83,7 +83,7 @@ default_ipaddr = '0.0.0.0'  # Any
 default_port = 54321
 default_bufsize = 10*1024*1024
 
-parser = argparse.ArgumentParser(description='UDP Client Example')
+parser = argparse.ArgumentParser(description='UDP Receiver Example')
 parser.add_argument('--addr', 
                     default=default_ipaddr,
                     type=str, 
@@ -95,7 +95,7 @@ parser.add_argument('--port',
 parser.add_argument('--size',
                     default=default_bufsize,
 					type=int,
-					help=f'Socket Buffer Size (default={default_bufsize})')
+					help=f'Socket Receive Buffer Size (default={default_bufsize})')
 parser.add_argument('--delay',
                     default=0,
                     type=float, 

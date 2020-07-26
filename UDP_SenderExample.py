@@ -84,7 +84,7 @@ default_ipaddr = '127.0.0.1'  # Loopback
 default_port = 54321
 
 
-parser = argparse.ArgumentParser(description='UDP Server Example')
+parser = argparse.ArgumentParser(description='UDP Sender Example')
 parser.add_argument('--addr', 
                     default=default_ipaddr,
                     type=str, 
