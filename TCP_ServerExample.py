@@ -187,7 +187,7 @@ while (True):
                     # This allows the client to dice up the data on some
                     # boundry as it receives the stream
                     sn = str(i + 1)
-                    s = f'----> {sn} ({avgips:6.0f} Hz)'
+                    s = f'----> {sn} ({avgips:6.0f} Hz) ({(args.pktsize*avgips)/1024/1024:7.3f} MBps)'
                     print(s)
 
                     s = sn + '<----- ' + (args.pktsize - len(sn) - 1) * '!' + '*'

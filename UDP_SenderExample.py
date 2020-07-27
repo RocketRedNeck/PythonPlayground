@@ -234,7 +234,7 @@ while (True):
                 lasti = i
                     
             sn = str(i+1)
-            s = f'----> {IP_DEST_ADDRESS}:{DEST_PORT} = {sn} ({avgips:6.0f} Hz)'
+            s = f'----> {IP_DEST_ADDRESS}:{DEST_PORT} = {sn} ({avgips:6.0f} Hz) ({(args.pktsize*avgips)/1024/1024:7.3f} MBps)'
             print(s)
             # Python requires a little bit of endcode/decode logic to ensure
             # that only the data bytes are sent
