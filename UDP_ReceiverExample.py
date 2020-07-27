@@ -322,6 +322,7 @@ while (True):
             count += 1
 
             now_sec = time.time()
+            display = False
             if (now_sec >= nexttime_sec):
                 nexttime_sec += 1.0
                 
@@ -332,6 +333,8 @@ while (True):
                 else:
                     avgips = 0.0
                 lastcount = count
+
+                display = True
                             
             # In order to print the data out in Python we need to decode
             # the bytes into a string (otherwise the b'string' will display)
@@ -344,9 +347,11 @@ while (True):
             if count == 1:
                 lastsn = int(sn)
             elif lastsn != int(sn) - 1:
-                print("    SKIP DETECTED!!!")
+                #print("    SKIP DETECTED!!!")
                 lostcount += (int(sn) - lastsn - 1)
-            print(f'{sn} <----- {address[0]}:{address[1]}  : lost = {lostcount} ({100*lostcount/int(sn):3.0f} %) : rcvbuf = {args.size} ({int(args.size/datasize)} pkts) ({avgips:6.0f} Hz)')
+            
+            if display:
+                print(f'{sn} <----- {address[0]}:{address[1]}  : lost = {lostcount} ({100*lostcount/int(sn):3.0f} %) : rcvbuf = {args.size} ({int(args.size/datasize)} pkts) ({avgips:6.0f} Hz)')
             lastsn = int(sn)
             
             if args.delaymod > 0 and args.delay > 0.0:

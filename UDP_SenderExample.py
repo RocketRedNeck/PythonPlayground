@@ -221,6 +221,8 @@ while (True):
         try:
             i = i + 1
             
+            display = False
+
             now_sec = time.time()
             if (now_sec >= nexttime_sec):
                 nexttime_sec += 1.0
@@ -232,19 +234,22 @@ while (True):
                 else:
                     avgips = 0.0
                 lasti = i
+                display = True
                     
             sn = str(i+1)
-            s = f'----> {IP_DEST_ADDRESS}:{DEST_PORT} = {sn} ({avgips:6.0f} Hz) ({(args.pktsize*avgips)/1024/1024:7.3f} MBps)'
-            print(s)
+
+            if display:
+                print(f'----> {IP_DEST_ADDRESS}:{DEST_PORT} = {sn} ({avgips:6.0f} Hz) ({(args.pktsize*avgips)/1024/1024:7.3f} MBps)')
+
             # Python requires a little bit of endcode/decode logic to ensure
             # that only the data bytes are sent
             sn += (args.pktsize - len(sn)) * '*'
             sn = sn.encode("utf-8")
             mySocket.sendto(sn, (IP_DEST_ADDRESS, DEST_PORT))
             if args.delay > 0:
-                now_sec = time.time()
-                while (time.time() - now_sec < args.delay):
-                    pass
+                now_sec = time.perf_counter()
+                while (time.perf_counter() - now_sec < args.delay):
+                    now_sec = now_sec
             
         except Exception as e:
             print(e)
