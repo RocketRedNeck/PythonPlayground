@@ -164,6 +164,8 @@ while (True):
             lasti = 0
             avgips = 0.0
 
+            display = False 
+
             while (True):
                 try:
                     i = i + 1
@@ -179,6 +181,8 @@ while (True):
                         else:
                             avgips = 0.0
                         lasti = i
+
+                        display = True
                      
                     # Because we are sending into a stream it
                     # is up to us to define where the "message" or
@@ -187,8 +191,11 @@ while (True):
                     # This allows the client to dice up the data on some
                     # boundry as it receives the stream
                     sn = str(i + 1)
-                    s = f'----> {sn} ({avgips:6.0f} Hz) ({(args.pktsize*avgips)/1024/1024:7.3f} MBps)'
-                    print(s)
+
+                    if display:
+                        display = False
+                        s = f'----> {sn} ({avgips:6.0f} Hz) ({(args.pktsize*avgips)/1024/1024:7.3f} MBps)'
+                        print(s)
 
                     s = sn + '<----- ' + (args.pktsize - len(sn) - 1) * '!' + '*'
                     acceptedSocket.send(str.encode(s))

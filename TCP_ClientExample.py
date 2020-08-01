@@ -100,6 +100,8 @@ while (True):
         avgips = 0.0
         lasttermtime_sec = 0.0
 
+        display = False
+
         while (True):
             try:
                 data = connectionSocket.recv(args.size)
@@ -145,13 +147,17 @@ while (True):
                                 avgips = 0.0
                             lastcount = count
 
+                            display = True
+
                         if count == 1:
                             lastsn = sn
                         elif lastsn != sn - 1:
-                            print("    SKIP DETECTED!!!")
+                            #print("    SKIP DETECTED!!!")
                             lostcount += (sn - lastsn - 1)
 
-                        print(f'{sn} <-----  : lost = {lostcount} ({100*lostcount/sn:3.0f} %) : ({avgips:6.0f} Hz)')
+                        if display:
+                            display = False
+                            print(f'{sn} <-----  : lost = {lostcount} ({100*lostcount/sn:3.0f} %) : ({avgips:6.0f} Hz)')
                         lastsn = sn
                 else:
                     if (time.time() - lasttermtime_sec >= 1.0):
