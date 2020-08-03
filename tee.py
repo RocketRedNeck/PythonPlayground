@@ -56,7 +56,7 @@ def start_simple_logging(module_file_name):
         #
         # E.g., suppose you write a blah.py file and include the following
 
-        import tsee
+        import tee
 
         Tee.start_simple_logging(__file__)
 
