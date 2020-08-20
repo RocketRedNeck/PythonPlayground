@@ -1,0 +1,18 @@
+With starting...
+__enter__ called
+Do setup here
+x = 3.14
+x = 3.14
+x = 3.14
+x = 3.14
+x = 0
+__exit__ called
+Do tear down here (i.e., close things up, etc)
+Traceback (most recent call last):
+  File ".\somemainthing.py", line 11, in <module>
+    thing.doBad()
+  File "C:\Users\mtkes\git\PythonPlayground\withlove\somemodule.py", line 21, in doBad
+    return self.doGood()
+  File "C:\Users\mtkes\git\PythonPlayground\withlove\somemodule.py", line 17, in doGood
+    return 1.0/self.x
+ZeroDivisionError: float division by zero
