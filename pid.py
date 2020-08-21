@@ -94,6 +94,8 @@ plot.figure(1)
 plot.cla()
 plot.grid()
 plot.plot(ts,sps,ts,pvs)
+
+plot.show()
     
     
     

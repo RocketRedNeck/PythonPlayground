@@ -34,10 +34,6 @@ import argparse
 import socket
 import time
 
-import tee
-
-tee.start_simple_logging(__file__)
-
 default_ipaddr = '0.0.0.0'  # Any
 default_port = 54321
 default_pktsize = 256
