@@ -8,15 +8,19 @@ from scipy import integrate
 
 # local imports
 
-tmax = 1
+tmax = 10
 tstep = 0.001
 
-V0 = 35
+# 0.5 V --> 0.25 J
+# 2.0 V --> 4.0 J
+V0 = 27
 
-R = 0.1
+R = 0.300
 
-N = 100
-C0 = 10e-3
+# 0.5 C --> 0.5 J
+# 2.0 C --> 2.0 J
+N = 1
+C0 = 2*4.5 #1.e-6*(3*2200 + 3*1800 + 3*1500 + 3*1500 + 3*1200 + 3*1000)
 
 CX = np.array(N*[C0])
 
@@ -37,7 +41,7 @@ for mode in charge_modes:
     else:
         C = np.sum(CX)
 
-    print(f'Mode: {mode} C = {C}')
+    print(f'Mode: {mode} C = {C} F V = {V0} V')
 
     tau = R * C
 
