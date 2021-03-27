@@ -9,11 +9,10 @@ import DataModel
 
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
-socket.connect('tcp://localhost:12345')         # In the guide, the subscribers connect to well know addresses (in this we stay local)
+socket.connect('tcp://localhost:5501')          # In the guide, the subscribers connect to well know addresses (in this we stay local)
 socket.setsockopt_string(zmq.SUBSCRIBE, '')     # If you don't actually subscribe, you don't get anything! In this case any topic.
 socket.RCVTIMEO = 1200                          # timeout in milliseconds so we can tell if there is anything happening while waiting for data
-
-socket.set_hwm(1)   # High Water Marks help define the backlog we can handle, in this case if we are behind, just let things drop
+socket.setsockopt(zmq.RCVHWM, 1000)             # Allows us to get behind by approx this many messages 
 
 header = DataModel.Header()
 
@@ -23,7 +22,7 @@ while True:
         pyobj = socket.recv_pyobj()
         type_pyobj = type(pyobj)
         if isinstance(pyobj,DataModel.Header):
-            print(f'@ {pyobj.time} = {pyobj.count}')
+            print(f'@ {pyobj.time} = {pyobj.count} from {pyobj.src}')
         else:
             print(f'Unknown Type Received: {type_pyobj}')
         wait_count = 0
