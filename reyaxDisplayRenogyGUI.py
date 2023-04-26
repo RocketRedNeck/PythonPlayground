@@ -39,7 +39,7 @@ decoder = {
 }
 
 
-ser = serial.Serial('COM5',baudrate=115200,timeout=5)  # open serial port
+ser = serial.Serial('/dev/ttyUSB0',baudrate=115200,timeout=5)  # open serial port
 
 ser.write(b'AT+ADDRESS?\r\n')
 line = ser.readline().decode('utf-8')   # read a '\n' terminated line
@@ -73,7 +73,7 @@ layout = [
     [sg.Button("QUIT")]
 ]
 
-font = ('Consolas', 18, "bold")
+font = ('Consolas', 10, "bold")
 offset = 25
 window = sg.Window("Renogy Link", layout, margins=(10, 10), font = font)
 
