@@ -197,11 +197,14 @@ while True:
     if event == "QUIT" or event == sg.WIN_CLOSED:
         break
     elif event == "RESTART":
-        try:
-            os.system('sudo reboot')
-        except Exception as e:
-            print(e)
-            pass
+        answer = sg.popup_yes_no('You are about to reboot the system.', 'Are you OK with that?', keep_on_top=True)
+
+        if answer == 'Yes':
+            try:
+                os.system('sudo reboot')
+            except Exception as e:
+                print(e)
+                pass
     
     try:
         while (True):
