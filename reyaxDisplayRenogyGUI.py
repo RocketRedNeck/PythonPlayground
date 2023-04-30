@@ -10,7 +10,7 @@ decoder = {
    0 : ("BATTERY_CAPACITY", "%", 1.0),
    1 : ("BATTERY_VOLTAGE", "V", 0.1),
    2 : ("CHARGING_CURRENT", "A", 0.01),
-   3 : ("TEMPERATURE_CNTLR", "C", 1.0, "TEMPERATURE_BATT", "C", 1.0),
+   3 : ("TEMPERATURE_CNTLR", "C", 1.0, "TEMPERATURE_BATT", "C", 1.0, True),
   35 : ("TEMPERATURE_PICO", "C", 1.0),
    4 : ("STREET_LIGHT_VOLTAGE", "V", 0.1),
    5 : ("STREET_LIGHT_CURRENT", "A", 0.01),
@@ -36,57 +36,92 @@ decoder = {
   26 : ("TOTAL_DISCHARGING", "AH", 1.0, True),
   28 : ("CUMULATIVE_POWER_GENERATION", "WH", 0.1, True),
   30 : ("CUMULATIVE_POWER_CONSUMPTION", "WH", 0.1, True),
-  32 : ("CHARGING_STATE", "-", 1.0, False, "Hex"),
-  33 : ("CONTROLLER_FAULT_WARNING", "-", 1.0, False, "Hex")
+  32 : ("CHARGING_STATE", "-", 1.0, False, "Enum", 
+        {0:"DEACTIVATED",
+         1:"ACTIVATED",
+         2:"MPPT",
+         3:"EQUALIZING",
+         4:"BOOST",
+         5:"FLOAT",
+         6:"CURRENT LIMITING (OVERPOWER)"
+         }
+       ),
+  33 : ("CONTROLLER_FAULT_WARNING", "-", 1.0, False, "Mask",
+        {30:"CHARGE MOS SHORT",
+         29:"ANTI-REVERSE MOS SHORT",
+         28:"SOLAR PANEL REVERSED",
+         27:"SOLAR PANEL WORKING POINT OVER-VOLTAGE",
+         26:"SOLAR PANEL COUNTER-CURRENT",
+         25:"PHOTOVOLTAIC INPUT SIDE OVER VOLTAGE",
+         24:"PHOTOVOLTAIC INPUT SIDE SHORT",
+         23:"PHOTOVOLTAIC INPUT OVERPOWER",
+         22:"AMBIENT TEMPERATURE TOO HIGH",
+         21:"CONTROLLER TEMPERATURE TOO HIGH",
+         20:"LOAD OVER-POWER/CURRENT",
+         19:"LOAD SHORT",
+         18:"BATTERY UNDER-VOLTAGE",
+         17:"BATTERY OVER-VOLTATE",
+         16:"BATTERY OVER-DISCHARGE"
+        }
+       )
 }
 
 
-coms = [
-    '/dev/ttyUSB0',
-    'COM5'
-]
-ser = None
-for com in coms:
-    try:
-        print(f'trying {com}')
-        ser = serial.Serial(com,baudrate=115200,timeout=5)  # open serial port
-        print(f'Found {com}')
-        ser.write(b'AT\r\n')
-        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-        print(line)
-        if line == "+OK\r\n":
-            print(f'Connected to {com}')
-            break
-        else:
-            ser.close()
-    except Exception as e:
-        pass
+def connect(exitOnFail = True):
+    coms = [
+        '/dev/ttyUSB0',
+        '/dev/ttyUSB1',
+        '/dev/ttyUSB2',
+        '/dev/ttyUSB3',
+        'COM5'
+    ]
+    ser = None
+    for com in coms:
+        try:
+            print(f'trying {com}')
+            ser = serial.Serial(com,baudrate=115200,timeout=5)  # open serial port
+            print(f'Found {com}')
+            ser.write(b'AT\r\n')
+            line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+            print(line)
+            if line == "+OK\r\n":
+                print(f'Connected to {com}')
+                break
+            else:
+                ser.close()
+        except Exception as e:
+            pass
 
-if ser is None:
-    print('None of the expected COM ports were found')
-    exit()
+    if ser is None:
+        print('None of the expected COM ports were found')
+        if exitOnFail:
+            exit()
+        
+    ser.write(b'AT+ADDRESS=101\r\n')
+    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+    print(f'{line}')
+    ser.write(b'AT+ADDRESS?\r\n')
+    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+    print(f'{line}')
+    ser.write(b'AT+PARAMETER?\r\n')
+    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+    print(f'{line}')
+    ser.write(b'AT+PARAMETER=11,8,1,4\r\n')
+    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+    print(f'{line}')
+    ser.write(b'AT+PARAMETER?\r\n')
+    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+    print(f'{line}')
+    ser.write(b'AT+BAND=915000000\r\n')
+    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+    print(f'{line}')
+    ser.write(b'AT+BAND?\r\n')
+    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+    print(f'{line}')
     
-ser.write(b'AT+ADDRESS=101\r\n')
-line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-print(f'{line}')
-ser.write(b'AT+ADDRESS?\r\n')
-line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-print(f'{line}')
-ser.write(b'AT+PARAMETER?\r\n')
-line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-print(f'{line}')
-ser.write(b'AT+PARAMETER=11,8,1,4\r\n')
-line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-print(f'{line}')
-ser.write(b'AT+PARAMETER?\r\n')
-line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-print(f'{line}')
-ser.write(b'AT+BAND=915000000\r\n')
-line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-print(f'{line}')
-ser.write(b'AT+BAND?\r\n')
-line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-print(f'{line}')
+    return ser
+
+ser = connect()
 
 layout = [
     [sg.Text(size=(50,1), key='-FRAME-')],
@@ -127,7 +162,15 @@ while True:
         break
     
     try:
-        line = ser.readline().decode("utf-8")
+        while (True):
+            try:
+                line = ser.readline().decode("utf-8")
+                break
+            except Exception as e:
+                print(e)
+                ser.close()
+                ser = connect(False)
+                
         if len(line) > 0:
             frameCount = frameCount + 1
             window['-FRAME-'].update(f'FRAME : {frameCount}')
@@ -164,16 +207,21 @@ while True:
                                     element = window.find_element(f'-{value[0].strip()}-', silent_on_error=True)
                                     if element is not None and not isinstance(element, sg.ErrorElement):
                                         element.update(f'{value[0]:25s} {x:.1f} {value[1]}')
-                                elif len(value) == 5:
+                                elif len(value) == 6:
                                     if value[3] == True:
                                         s = 8
                                     else:
                                         s = 4
-                                    print(f'{key:2d} : {value[0]} = {data[k:k+s]}')
+                                    d = data[k:k+s]
+                                    print(f'{key:2d} : {value[0]} = {d}')
+                                    if "Enum" == value[4]:
+                                        x = int(data[k:k+s])
+                                        if x in value[5]:
+                                            d = value[5][x]
                                     element = window.find_element(f'-{value[0].strip()}-', silent_on_error=True)
                                     if element is not None and not isinstance(element, sg.ErrorElement):
-                                        element.update(f'{value[0]:25s} {data[k:k+s]}')
-                                elif len(value) == 6:
+                                        element.update(f'{value[0]:25s} {d}')
+                                elif len(value) == 7:
                                     x = int(data[k:k+2],16)
                                     x = x * value[2]
                                     print(f'{key:2d} : {value[0]} = {x:.1f} {value[1]}')
