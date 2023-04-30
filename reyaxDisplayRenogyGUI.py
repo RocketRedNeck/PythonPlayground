@@ -79,7 +79,7 @@ def connect(exitOnFail = True):
     for com in coms:
         try:
             print(f'trying {com}')
-            ser = serial.Serial(com,baudrate=115200,timeout=5)  # open serial port
+            ser = serial.Serial(com,baudrate=115200,timeout=3)  # open serial port
             print(f'Found {com}')
             ser.write(b'AT\r\n')
             line = ser.readline().decode('utf-8')   # read a '\n' terminated line
@@ -167,7 +167,7 @@ while True:
                 line = ser.readline().decode("utf-8")
                 break
             except Exception as e:
-                print(e)
+                window['-FRAME-'].update(f'FRAME : {frameCount} (USB-TTL DISCONNECTED)')
                 ser.close()
                 ser = connect(False)
                 
@@ -189,7 +189,7 @@ while True:
                             element.update(f'{loopNames[index]} : {data.strip()}')
 
                         if index == 9:
-                            window['-FRAME-'].update(f'FRAME : {frameCount} (DISCONNECTED)')
+                            window['-FRAME-'].update(f'FRAME : {frameCount} (RS-232 DISCONNECTED)')
                         elif index == 0:
                             for key, value in decoder.items():
                                 #print(f'{key} : {value[0]} {len(value)}')
