@@ -25,7 +25,7 @@ decoder = {
   14 : ("MAX_DISCHARGING_CURRENT_OF_DAY", "A", 0.01),
   15 : ("MAX_CHARGING_POWER_OF_DAY", "W", 1.0),
   16 : ("MAX_DISCHARGING_POWER_OF_DAY", "W", 1.0),
-  19 : ("CHARGING_OF_DAY", "AH", 1.0),
+  17 : ("CHARGING_OF_DAY", "AH", 1.0),
   18 : ("DISCHARGING_OF_DAY", "AH", 1.0),
   19 : ("POWER_GENERATION_OF_DAY", "WH", 0.1),
   20 : ("POWER_CONSUMPTION_OF_DAY", "WH", 0.1),
@@ -145,7 +145,7 @@ layout_col1 = [
 layout_col2 = [
     [sg.Text(size=(50,1), key='-TOTAL_OPERATING_DAYS-')],
     [sg.Text(size=(50,1), key='-TOTAL_BATTERY_OVER_DISCHARGES-')],
-    [sg.Text(size=(50,1), key='-TOTAL_BATTERY_FULL_CHARGES"-')],
+    [sg.Text(size=(50,1), key='-TOTAL_BATTERY_FULL_CHARGES-')],
     [sg.Text(size=(50,1), key='-TOTAL_CHARGING-')],
     [sg.Text(size=(50,1), key='-TOTAL_DISCHARGING-')],
     [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_GENERATION-')],
