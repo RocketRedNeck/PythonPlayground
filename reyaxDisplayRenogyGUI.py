@@ -79,7 +79,7 @@ def connect(exitOnFail = True):
     for com in coms:
         try:
             print(f'trying {com}')
-            ser = serial.Serial(com,baudrate=115200,timeout=3)  # open serial port
+            ser = serial.Serial(com,baudrate=115200,timeout=5)  # open serial port
             print(f'Found {com}')
             ser.write(b'AT\r\n')
             line = ser.readline().decode('utf-8')   # read a '\n' terminated line
@@ -123,7 +123,7 @@ def connect(exitOnFail = True):
 
 ser = connect()
 
-layout = [
+layout_col1 = [
     [sg.Text(size=(50,1), key='-FRAME-')],
     [sg.Text(size=(50,1), key='-MODEL-')],
     [sg.Text(size=(50,1), key='-SERIAL_NO-')],
@@ -141,6 +141,30 @@ layout = [
     [sg.Button("QUIT")]
 ]
 
+layout_col2 = [
+    [sg.Text(size=(50,1), key='-BATTERY_MIN_VOLTAGE_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-BATTERY_MAX_VOLTAGE_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-CHARGING_AH_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-DISCHARGING_AH_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-POWER_GENERATION_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-POWER_CONSUMPTION_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-TOTAL_OPERATING_DAYS-')],
+    [sg.Text(size=(50,1), key='-TOTAL_BATTERY_OVER_DISCHARGES-')],
+    [sg.Text(size=(50,1), key='-TOTAL_BATTERY_FULL_CHARGES"-')],
+    [sg.Text(size=(50,1), key='-TOTAL_CHARGING"-')],
+    [sg.Text(size=(50,1), key='-TOTAL_DISCHARGING-')],
+    [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_GENERATION-')],
+    [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_CONSUMPTION-')],
+    [sg.Button("RESTART")]
+]
+
+layout = [
+    [
+        sg.Column(layout_col1),
+        sg.VSeperator(),
+        sg.Column(layout_col2),
+    ]
+]
 font = ('Consolas', 10, "bold")
 offset = 25
 window = sg.Window("Renogy Link", layout, margins=(10, 10), font = font)
@@ -160,6 +184,12 @@ while True:
     # presses the OK button
     if event == "QUIT" or event == sg.WIN_CLOSED:
         break
+    elif event == "RESTART":
+        try:
+            os.system('sudo reboot')
+        except Exception as e:
+            print(e)
+            pass
     
     try:
         while (True):
