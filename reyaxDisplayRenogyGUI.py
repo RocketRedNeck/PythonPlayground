@@ -188,7 +188,9 @@ while True:
                         if element is not None and not isinstance(element, sg.ErrorElement):
                             element.update(f'{loopNames[index]} : {data.strip()}')
 
-                        if index == 0:
+                        if index == 9:
+                            window['-FRAME-'].update(f'FRAME : {frameCount} (DISCONNECTED)')
+                        elif index == 0:
                             for key, value in decoder.items():
                                 #print(f'{key} : {value[0]} {len(value)}')
                                 k = 4*key
