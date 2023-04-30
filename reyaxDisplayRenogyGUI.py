@@ -1,4 +1,6 @@
 import serial
+import time
+import os
 
 #https://pypi.org/project/PySimpleGUI/
 #https://realpython.com/pysimplegui-python/
@@ -35,12 +37,38 @@ decoder = {
   28 : ("CUMULATIVE_POWER_GENERATION", "WH", 0.1, True),
   30 : ("CUMULATIVE_POWER_CONSUMPTION", "WH", 0.1, True),
   32 : ("CHARGING_STATE", "-", 1.0, False, "Hex"),
-  33 : ("CONTROLLER_FAULT_WARNING", "-", 1.0, True, "Hex")
+  33 : ("CONTROLLER_FAULT_WARNING", "-", 1.0, False, "Hex")
 }
 
 
-ser = serial.Serial('/dev/ttyUSB0',baudrate=115200,timeout=5)  # open serial port
+coms = [
+    '/dev/ttyUSB0',
+    'COM5'
+]
+ser = None
+for com in coms:
+    try:
+        print(f'trying {com}')
+        ser = serial.Serial(com,baudrate=115200,timeout=5)  # open serial port
+        print(f'Found {com}')
+        ser.write(b'AT\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(line)
+        if line == "+OK\r\n":
+            print(f'Connected to {com}')
+            break
+        else:
+            ser.close()
+    except Exception as e:
+        pass
 
+if ser is None:
+    print('None of the expected COM ports were found')
+    exit()
+    
+ser.write(b'AT+ADDRESS=101\r\n')
+line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+print(f'{line}')
 ser.write(b'AT+ADDRESS?\r\n')
 line = ser.readline().decode('utf-8')   # read a '\n' terminated line
 print(f'{line}')
@@ -53,7 +81,12 @@ print(f'{line}')
 ser.write(b'AT+PARAMETER?\r\n')
 line = ser.readline().decode('utf-8')   # read a '\n' terminated line
 print(f'{line}')
-
+ser.write(b'AT+BAND=915000000\r\n')
+line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+print(f'{line}')
+ser.write(b'AT+BAND?\r\n')
+line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+print(f'{line}')
 
 layout = [
     [sg.Text(size=(50,1), key='-FRAME-')],
