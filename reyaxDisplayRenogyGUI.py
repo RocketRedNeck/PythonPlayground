@@ -1,6 +1,7 @@
-import serial
-import time
 import os
+import serial
+from sys import platform
+import time
 
 #https://pypi.org/project/PySimpleGUI/
 #https://realpython.com/pysimplegui-python/
@@ -168,17 +169,16 @@ layout = [
 ]
 font = ('Consolas', 9, "bold")
 offset = 25
-window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font).Finalize()
-from sys import platform
-if platform == "linux" or platform == "linux2":
-    # linux
-    window.Maximize()
-elif platform == "darwin":
-    # OS X
-    pass
-elif platform == "win32":
-    # Windows...
-    pass
+window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font) #.Finalize() # Resizing not working right
+# if platform == "linux" or platform == "linux2":
+#     # linux
+#     window.Maximize()
+# elif platform == "darwin":
+#     # OS X
+#     pass
+# elif platform == "win32":
+#     # Windows...
+#     pass
     
 loopNames = {
     1 : 'MODEL    ',
