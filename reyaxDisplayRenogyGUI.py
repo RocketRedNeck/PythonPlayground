@@ -25,8 +25,8 @@ decoder = {
   14 : ("MAX_DISCHARGING_CURRENT_OF_DAY", "A", 0.01),
   15 : ("MAX_CHARGING_POWER_OF_DAY", "W", 1.0),
   16 : ("MAX_DISCHARGING_POWER_OF_DAY", "W", 1.0),
-  19 : ("CHARGING_AH_OF_DAY", "AH", 1.0),
-  18 : ("DISCHARGING_AH_OF_DAY", "AH", 1.0),
+  19 : ("CHARGING_OF_DAY", "AH", 1.0),
+  18 : ("DISCHARGING_OF_DAY", "AH", 1.0),
   19 : ("POWER_GENERATION_OF_DAY", "WH", 0.1),
   20 : ("POWER_CONSUMPTION_OF_DAY", "WH", 0.1),
   21 : ("TOTAL_OPERATING_DAYS", "-", 1.0),
@@ -123,6 +123,7 @@ def connect(exitOnFail = True):
 
 ser = connect()
 
+sg.theme('system default')
 layout_col1 = [
     [sg.Text(size=(50,1), key='-FRAME-')],
     [sg.Text(size=(50,1), key='-MODEL-')],
@@ -142,19 +143,19 @@ layout_col1 = [
 ]
 
 layout_col2 = [
-    [sg.Text(size=(50,1), key='-BATTERY_MIN_VOLTAGE_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-BATTERY_MAX_VOLTAGE_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-CHARGING_AH_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-DISCHARGING_AH_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-POWER_GENERATION_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-POWER_CONSUMPTION_OF_DAY-')],
     [sg.Text(size=(50,1), key='-TOTAL_OPERATING_DAYS-')],
     [sg.Text(size=(50,1), key='-TOTAL_BATTERY_OVER_DISCHARGES-')],
     [sg.Text(size=(50,1), key='-TOTAL_BATTERY_FULL_CHARGES"-')],
-    [sg.Text(size=(50,1), key='-TOTAL_CHARGING"-')],
+    [sg.Text(size=(50,1), key='-TOTAL_CHARGING-')],
     [sg.Text(size=(50,1), key='-TOTAL_DISCHARGING-')],
     [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_GENERATION-')],
     [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_CONSUMPTION-')],
+    [sg.Text(size=(50,1), key='-BATTERY_MIN_VOLTAGE_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-BATTERY_MAX_VOLTAGE_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-CHARGING_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-DISCHARGING_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-POWER_GENERATION_OF_DAY-')],
+    [sg.Text(size=(50,1), key='-POWER_CONSUMPTION_OF_DAY-')],
     [sg.Button("RESTART")]
 ]
 
@@ -165,9 +166,9 @@ layout = [
         sg.Column(layout_col2),
     ]
 ]
-font = ('Consolas', 10, "bold")
+font = ('Consolas', 9, "bold")
 offset = 25
-window = sg.Window("Renogy Link", layout, margins=(10, 10), font = font)
+window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font)
 
 loopNames = {
     1 : 'MODEL    ',
@@ -230,7 +231,7 @@ while True:
                                     print(f'{key:2d} : {value[0]} = {x:.1f} {value[1]}')
                                     element = window.find_element(f'-{value[0].strip()}-', silent_on_error=True)
                                     if element is not None and not isinstance(element, sg.ErrorElement):
-                                        element.update(f'{value[0]:25s} {x:.1f} {value[1]}')
+                                        element.update(f'{value[0]:35s} {x:.1f} {value[1]}')
 
                                 elif len(value) == 4:
                                     x = int(data[k:k+8],16)
@@ -238,7 +239,7 @@ while True:
                                     print(f'{key:2d} : {value[0]} = {x:.1f} {value[1]}')
                                     element = window.find_element(f'-{value[0].strip()}-', silent_on_error=True)
                                     if element is not None and not isinstance(element, sg.ErrorElement):
-                                        element.update(f'{value[0]:25s} {x:.1f} {value[1]}')
+                                        element.update(f'{value[0]:35s} {x:.1f} {value[1]}')
                                 elif len(value) == 6:
                                     if value[3] == True:
                                         s = 8
@@ -252,20 +253,20 @@ while True:
                                             d = value[5][x]
                                     element = window.find_element(f'-{value[0].strip()}-', silent_on_error=True)
                                     if element is not None and not isinstance(element, sg.ErrorElement):
-                                        element.update(f'{value[0]:25s} {d}')
+                                        element.update(f'{value[0]:35s} {d}')
                                 elif len(value) == 7:
                                     x = int(data[k:k+2],16)
                                     x = x * value[2]
                                     print(f'{key:2d} : {value[0]} = {x:.1f} {value[1]}')
                                     element = window.find_element(f'-{value[0].strip()}-', silent_on_error=True)
                                     if element is not None and not isinstance(element, sg.ErrorElement):
-                                        element.update(f'{value[0]:25s} {x:.1f} {value[1]}')
+                                        element.update(f'{value[0]:35s} {x:.1f} {value[1]}')
                                     x = int(data[k+2:k+4],16)
                                     x = x * value[5]
                                     print(f'{key:2d} : {value[3]} = {x:.1f} {value[4]}')                        
                                     element = window.find_element(f'-{value[3].strip()}-', silent_on_error=True)
                                     if element is not None and not isinstance(element, sg.ErrorElement):
-                                        element.update(f'{value[3]:25s} {x:.1f} {value[4]}')
+                                        element.update(f'{value[3]:35s} {x:.1f} {value[4]}')
                                     
         else:
             frameCount = frameCount + 1
