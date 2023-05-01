@@ -195,7 +195,10 @@ while True:
     # End program if user closes window or
     # presses the OK button
     if event == "QUIT" or event == sg.WIN_CLOSED:
-        break
+        answer = sg.popup_yes_no('Quit?', 'Are you sure?', keep_on_top=True)
+        if answer == 'Yes':
+            break
+        
     elif event == "RESTART":
         answer = sg.popup_yes_no('You are about to reboot the system.', 'Are you OK with that?', keep_on_top=True)
 
