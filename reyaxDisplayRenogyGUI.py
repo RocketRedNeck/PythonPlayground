@@ -144,19 +144,12 @@ layout_col1 = [
 ]
 
 layout_col2 = [
-    [sg.Text(size=(50,1), key='-TOTAL_OPERATING_DAYS-')],
     [sg.Text(size=(50,1), key='-TOTAL_BATTERY_OVER_DISCHARGES-')],
     [sg.Text(size=(50,1), key='-TOTAL_BATTERY_FULL_CHARGES-')],
     [sg.Text(size=(50,1), key='-TOTAL_CHARGING-')],
-    [sg.Text(size=(50,1), key='-TOTAL_DISCHARGING-')],
     [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_GENERATION-')],
-    [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_CONSUMPTION-')],
-    [sg.Text(size=(50,1), key='-BATTERY_MIN_VOLTAGE_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-BATTERY_MAX_VOLTAGE_OF_DAY-')],
     [sg.Text(size=(50,1), key='-CHARGING_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-DISCHARGING_OF_DAY-')],
     [sg.Text(size=(50,1), key='-POWER_GENERATION_OF_DAY-')],
-    [sg.Text(size=(50,1), key='-POWER_CONSUMPTION_OF_DAY-')],
     [sg.Button("RESTART")]
 ]
 
