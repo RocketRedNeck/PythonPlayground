@@ -32,22 +32,40 @@ invisible = (sg.theme_background_color(), sg.theme_background_color())
 font_name = 'Liberation Mono' #'Consolas' #'Liberation Sans'
 font_small = (font_name, 10,)
 font_medium = (font_name, 15)
-font_large = (font_name, 24)
+font_medlarge = (font_name, 40)
+font_large = (font_name, 96)
 top_frame = [
-    [sg.Text('FAULT : 0000', size=15, key='FAULT'), 
-     sg.Text('\u219100000 / \u219300000', size=21, key='CHARGE COUNT'),
-     sg.Text('HH:YY::SS', key='TIME'),
-     #sg.Text('AM', size=10, font=font_small, key='AMPM'),
-     #sg.Text('DAY DD-MON-YYYY', key='DATE'),
-    ]
+    [sg.Text('FAULT : 0000', size=15, key='FAULT'), sg.Text('\u219100000 / \u219300000', size=21, key='CHARGE COUNT'), sg.Text('HH:YY::SS', key='TIME')]
+]
+
+power_frame = [
+    sg.Column([
+        [sg.Text('DEACTIVATED', key='CHARGING STATE')],
+        [sg.Text('000', font=font_large, key='CHARGING POWER'), sg.Text('W')],
+    ], element_justification='c'),
+    sg.Column([
+        [sg.Text('BATTERY')],
+        [sg.Text('000', font=font_large, key='BATTERY CAPCITY'), sg.Text('%')],
+    ], element_justification='c'),
+    sg.Column([
+        [sg.Text('BATTERY')],
+        [sg.Text('00.0', font=font_medlarge, key='BATTERY VOLTAGE'), sg.Text('V')],
+        [sg.Text('00.0', font=font_medlarge, key='BATTERY CURRENT'), sg.Text('A')],
+    ], element_justification='c'),
+]
+
+graph_frame = [
+    
 ]
 
 bottom_frame = [
-    [sg.Button(key='POWER', button_color=invisible, image_filename='img_small.png', border_width=0)]
+    [sg.Button(key='QUIT', button_color=invisible, image_filename='img_small.png', border_width=0)]
 ]
 
 layout = [
     [top_frame],
+    [sg.HSep()],
+    [power_frame],
     [sg.HSep()],
     [sg.HSep()],
     [bottom_frame]
@@ -87,7 +105,7 @@ while True:
     
     # End program if user closes window or
     # presses the OK button
-    if event == "POWER" or event == sg.WIN_CLOSED:
+    if event == "QUIT" or event == sg.WIN_CLOSED:
         answer = sg.popup_yes_no('Reboot?', 'Would you like to reboot?', keep_on_top=True)
         if answer == 'Yes':
             try:
