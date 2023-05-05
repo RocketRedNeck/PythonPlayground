@@ -41,10 +41,13 @@ invisible = (sg.theme_background_color(), sg.theme_background_color())
 
 # 2191 and 2193
 font_name = 'Liberation Mono'
-font_small = (font_name, 10,)
+font_small = (font_name, 7,)
+font_medsmall = (font_name, 13)
 font_medium = (font_name, 15)
-font_medlarge = (font_name, 48)
+font_medlarge = (font_name, 38)
 font_large = (font_name, 96)
+
+font_default = font_medium
 
 top_frame = [
     [sg.Text('FAULT : 0000', size=15, key='FAULT'), 
@@ -54,15 +57,15 @@ top_frame = [
 ]
 
 charge_power_frame = [
-        [sg.Text('DEACTIVATED', key='CHARGING STATE')],
+        [sg.Text('DEACTIVATED', font=font_medsmall, key='CHARGING STATE')],
         [sg.Text('000', font=font_large, key='CHARGING POWER'), sg.Text('W')],    
 ]
 battery_capacity_frame = [
-        [sg.Text('BATTERY')],
-        [sg.Text('000', font=font_large, key='BATTERY CAPCITY'), sg.Text('%')],
+        [sg.Text('BATTERY',font=font_medsmall)],
+        [sg.Text('000', font=font_large, key='BATTERY CAPACITY'), sg.Text('%')],
 ]
 battery_VA_frame = [
-        [sg.Text('BATTERY')],
+        [sg.Text('BATTERY', font=font_medsmall)],
         [sg.Text('00.0', font=font_medlarge, key='BATTERY VOLTAGE'), sg.Text('V')],
         [sg.Text('00.0', font=font_medlarge, key='BATTERY CURRENT'), sg.Text('A')],
 ]
@@ -77,8 +80,22 @@ canvas_frame = [
     [sg.Canvas(key="CANVAS")]
 ]
 
+temperature_frame = [
+        [sg.Text('BATTERY', size=10, font=font_medsmall, justification='left'),    sg.Text('00.0', font=font_medsmall, key='BATTERY TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
+        [sg.Text('CONTROLLER', size=10, font=font_medsmall, justification='left'), sg.Text('00.0', font=font_medsmall, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
+        [sg.Text('PICO', size=10, font=font_medsmall, justification='left'),       sg.Text('00.0', font=font_medsmall, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+    ]
+
+panel_VA_frame = [
+        [sg.Text('PANEL', font=font_medsmall)],
+        [sg.Text('00.0', font=font_medlarge, key='PANEL VOLTAGE'), sg.Text('V')],
+        [sg.Text('00.0', font=font_medlarge, key='PANEL CURRENT'), sg.Text('A')],
+]
+
 middle_frame = [
-    sg.Column(canvas_frame),
+    sg.Column(canvas_frame, size=(330,150), element_justification='left'),
+    sg.Column(temperature_frame, size=(212,85), element_justification='center'),
+    sg.Column(panel_VA_frame, element_justification='center'),
 ]
 
 bottom_frame = [
@@ -93,12 +110,12 @@ layout = [
     [top_frame],
     [sg.HSep()],
     [power_frame],
-    [sg.HSep()],
+    #[sg.HSep()],
     [middle_frame],
     [sg.HSep()],
     [bottom_frame]
 ]
-window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font_medium, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
+window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
 
 dayname = {
     0 : 'MON',
@@ -125,8 +142,8 @@ monname = {
     12 : 'DEC'
 }
 
-fig = figure.Figure(figsize=(2.5, 1.35), dpi=100)
-t = np.arange(0, 3, .01)
+fig = figure.Figure(figsize=(3.5, 1.35), dpi=100)
+t = np.arange(0, np.pi, .01)
 fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
 ax = fig.gca()
 ax.margins(0)
