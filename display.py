@@ -7,9 +7,20 @@ import PySimpleGUI as sg
 import PIL.Image
 from datetime import datetime
 
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib
+from matplotlib import figure, pyplot
 
-# Add your new theme colors and settings
+matplotlib.use("TkAgg")
 
+def draw_figure(canvas, figure):
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
+    return figure_canvas_agg
+
+# Add new theme colors and settings
 bg_color = '#e8a202'
 light_bg_color = '#FFcc66'
 sg.LOOK_AND_FEEL_TABLE['Renogy'] = {
@@ -29,37 +40,53 @@ invisible = (sg.theme_background_color(), sg.theme_background_color())
 #sg.popup_get_text('Renogy theme looks like this') 
 
 # 2191 and 2193
-font_name = 'Liberation Mono' #'Consolas' #'Liberation Sans'
+font_name = 'Liberation Mono'
 font_small = (font_name, 10,)
 font_medium = (font_name, 15)
-font_medlarge = (font_name, 40)
+font_medlarge = (font_name, 48)
 font_large = (font_name, 96)
+
 top_frame = [
-    [sg.Text('FAULT : 0000', size=15, key='FAULT'), sg.Text('\u219100000 / \u219300000', size=21, key='CHARGE COUNT'), sg.Text('HH:YY::SS', key='TIME')]
+    [sg.Text('FAULT : 0000', size=15, key='FAULT'), 
+     sg.Text('\u219100000 / \u219300000', size=21, key='CHARGE COUNT'), 
+     sg.Text('HH:YY::SS', key='TIME')
+    ]
 ]
 
-power_frame = [
-    sg.Column([
+charge_power_frame = [
         [sg.Text('DEACTIVATED', key='CHARGING STATE')],
-        [sg.Text('000', font=font_large, key='CHARGING POWER'), sg.Text('W')],
-    ], element_justification='c'),
-    sg.Column([
+        [sg.Text('000', font=font_large, key='CHARGING POWER'), sg.Text('W')],    
+]
+battery_capacity_frame = [
         [sg.Text('BATTERY')],
         [sg.Text('000', font=font_large, key='BATTERY CAPCITY'), sg.Text('%')],
-    ], element_justification='c'),
-    sg.Column([
+]
+battery_VA_frame = [
         [sg.Text('BATTERY')],
         [sg.Text('00.0', font=font_medlarge, key='BATTERY VOLTAGE'), sg.Text('V')],
         [sg.Text('00.0', font=font_medlarge, key='BATTERY CURRENT'), sg.Text('A')],
-    ], element_justification='c'),
 ]
 
-graph_frame = [
-    
+power_frame = [
+    sg.Column(charge_power_frame, element_justification='center'),
+    sg.Column(battery_capacity_frame, element_justification='center'),
+    sg.Column(battery_VA_frame, element_justification='center'),
+]
+
+canvas_frame = [
+    [sg.Canvas(key="CANVAS")]
+]
+
+middle_frame = [
+    sg.Column(canvas_frame),
 ]
 
 bottom_frame = [
-    [sg.Button(key='QUIT', button_color=invisible, image_filename='img_small.png', border_width=0)]
+    [sg.Button(key='QUIT', button_color=invisible, image_filename='img_small.png', border_width=0),
+     sg.Text('MODEL No. ----------------', size=28, key='MODEL No.'),
+     sg.Text('--------------------', size=20, justification='right', key='Com State'),
+     sg.Text('000000000', key='FRAME COUNT')
+    ]
 ]
 
 layout = [
@@ -67,6 +94,7 @@ layout = [
     [sg.HSep()],
     [power_frame],
     [sg.HSep()],
+    [middle_frame],
     [sg.HSep()],
     [bottom_frame]
 ]
@@ -97,10 +125,23 @@ monname = {
     12 : 'DEC'
 }
 
+fig = figure.Figure(figsize=(2.5, 1.35), dpi=100)
+t = np.arange(0, 3, .01)
+fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+ax = fig.gca()
+ax.margins(0)
+ax.grid()
+ax.get_xaxis().set_ticklabels([]) #set_visible(True)
+fig.patch.set_facecolor(bg_color)
+ax.set_facecolor(bg_color)
+
+
+draw_figure(window["CANVAS"].TKCanvas, fig)
 while True:
     now = datetime.today()
     
     window['TIME'].update(f'{now.hour:02d}:{now.minute:02d}:{now.second:02d}  {dayname[now.weekday()]} {now.day:02d}-{monname[now.month]}-{now.year}')
+    
     event, values = window.read(timeout=10)
     
     # End program if user closes window or
@@ -113,7 +154,10 @@ while True:
             except Exception as e:
                 print(e)
                 pass
+            break
         else:
             answer = sg.popup_yes_no('Quit?', 'Would you like to quit, instead?', keep_on_top=True)
             if answer == 'Yes':
                 break
+            
+window.close()
