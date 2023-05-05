@@ -167,7 +167,7 @@ layout = [
         sg.Column(layout_col2),
     ]
 ]
-font = ('Consolas', 9, "bold")
+font = ('LCD', 9, "bold")
 offset = 25
 window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
 window.Maximize()
