@@ -97,7 +97,7 @@ def connect(exitOnFail = True):
         print('None of the expected COM ports were found')
         if exitOnFail:
             exit()
-        
+
     ser.write(b'AT+ADDRESS=101\r\n')
     line = ser.readline().decode('utf-8')   # read a '\n' terminated line
     print(f'{line}')
@@ -119,7 +119,7 @@ def connect(exitOnFail = True):
     ser.write(b'AT+BAND?\r\n')
     line = ser.readline().decode('utf-8')   # read a '\n' terminated line
     print(f'{line}')
-    
+
     return ser
 
 ser = connect()
@@ -167,7 +167,7 @@ layout = [
         sg.Column(layout_col2),
     ]
 ]
-font = ('LCD', 9, "bold")
+font = ('Consolas', 9, "bold") #('LCD', 7, "bold")
 offset = 25
 window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
 window.Maximize()
