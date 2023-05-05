@@ -127,8 +127,6 @@ ser = connect()
 sg.theme('system default')
 layout_col1 = [
     [sg.Text(size=(50,1), key='-FRAME-')],
-    [sg.Text(size=(50,1), key='-MODEL-')],
-    [sg.Text(size=(50,1), key='-SERIAL_NO-')],
     [sg.Text(size=(50,1), key='-CONTROLLER_FAULT_WARNING-')],
     [sg.Text(size=(50,1), key='-BATTERY_CAPACITY-')],
     [sg.Text(size=(50,1), key='-BATTERY_VOLTAGE-')],
@@ -144,6 +142,8 @@ layout_col1 = [
 ]
 
 layout_col2 = [
+    [sg.Text(size=(50,1), key='-MODEL-')],
+    [sg.Text(size=(50,1), key='-SERIAL_NO-')],
     [sg.Text(size=(50,1), key='-TOTAL_BATTERY_OVER_DISCHARGES-')],
     [sg.Text(size=(50,1), key='-TOTAL_BATTERY_FULL_CHARGES-')],
     [sg.Text(size=(50,1), key='-TOTAL_CHARGING-')],
