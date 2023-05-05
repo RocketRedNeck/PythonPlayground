@@ -96,6 +96,6 @@ while True:
                 print(e)
                 pass
         else:
-            answer = sg.popup_yes_no('Quit?', 'Are you sure?', keep_on_top=True)
+            answer = sg.popup_yes_no('Quit?', 'Would you like to quit, instead?', keep_on_top=True)
             if answer == 'Yes':
                 break
