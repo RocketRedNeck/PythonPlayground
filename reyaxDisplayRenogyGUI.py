@@ -149,14 +149,14 @@ layout_col2 = [
     [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_GENERATION-')],
     [sg.Text(size=(50,1), key='-CHARGING_OF_DAY-')],
     [sg.Text(size=(50,1), key='-POWER_GENERATION_OF_DAY-')],
-    [sg.HSeperator()],
+    [sg.HSep()],
     [sg.Button("QUIT"), sg.Button("RESTART")]
 ]
 
 layout = [
     [
         sg.Column(layout_col1),
-        sg.VSeperator(),
+        sg.VSep(),
         sg.Column(layout_col2),
     ]
 ]
