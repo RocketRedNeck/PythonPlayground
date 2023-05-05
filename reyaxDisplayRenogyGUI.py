@@ -149,6 +149,7 @@ layout_col2 = [
     [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_GENERATION-')],
     [sg.Text(size=(50,1), key='-CHARGING_OF_DAY-')],
     [sg.Text(size=(50,1), key='-POWER_GENERATION_OF_DAY-')],
+    [sg.HSeperator()],
     [sg.Button("QUIT"), sg.Button("RESTART")]
 ]
 
