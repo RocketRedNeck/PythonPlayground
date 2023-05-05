@@ -137,8 +137,7 @@ layout_col1 = [
     [sg.Text(size=(50,1), key='-TEMPERATURE_CNTLR-')],
     [sg.Text(size=(50,1), key='-TEMPERATURE_BATT-')],
     [sg.Text(size=(50,1), key='-TEMPERATURE_PICO-')],
-    [sg.Text(size=(50,1), key='-CONTROLLER_FAULT_WARNING-')],
-    [[sg.Button("QUIT")], [sg.Button("RESTART")]]
+    [sg.Text(size=(50,1), key='-CONTROLLER_FAULT_WARNING-')]
 ]
 
 layout_col2 = [
@@ -150,6 +149,7 @@ layout_col2 = [
     [sg.Text(size=(50,1), key='-CUMULATIVE_POWER_GENERATION-')],
     [sg.Text(size=(50,1), key='-CHARGING_OF_DAY-')],
     [sg.Text(size=(50,1), key='-POWER_GENERATION_OF_DAY-')]
+    [[sg.Button("QUIT")], [sg.Button("RESTART")]]
 ]
 
 layout = [
