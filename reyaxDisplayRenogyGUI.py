@@ -162,7 +162,7 @@ layout = [
 ]
 font = ('Consolas', 9, "bold") #('LCD', 7, "bold")
 offset = 25
-window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
+window = sg.Window('Renogy Link', layout, background_color='#F7CE6C', margins=(10, 10), font = font, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
 window.Maximize()
 # if platform == "linux" or platform == "linux2":
 #     # linux
