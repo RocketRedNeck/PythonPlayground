@@ -6,6 +6,7 @@ import PySimpleGUI as sg
 
 import PIL.Image
 from datetime import datetime
+import time
 
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -13,12 +14,6 @@ import matplotlib
 from matplotlib import figure, pyplot
 
 matplotlib.use("TkAgg")
-
-def draw_figure(canvas, figure):
-    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-    figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
-    return figure_canvas_agg
 
 # Add new theme colors and settings
 bg_color = '#e8a202'
@@ -58,16 +53,16 @@ top_frame = [
 
 charge_power_frame = [
         [sg.Text('DEACTIVATED', font=font_medsmall, key='CHARGING STATE')],
-        [sg.Text('000', font=font_large, key='CHARGING POWER'), sg.Text('W')],    
+        [sg.Text('000',font=font_large, enable_events=True, key='CHARGING POWER'), sg.Text('W')],    
 ]
 battery_capacity_frame = [
         [sg.Text('BATTERY',font=font_medsmall)],
-        [sg.Text('000', font=font_large, key='BATTERY CAPACITY'), sg.Text('%')],
+        [sg.Text('000', font=font_large, enable_events=True, key='BATTERY CAPACITY'), sg.Text('%')],
 ]
 battery_VA_frame = [
         [sg.Text('BATTERY', font=font_medsmall)],
-        [sg.Text('00.0', font=font_medlarge, key='BATTERY VOLTAGE'), sg.Text('V')],
-        [sg.Text('00.0', font=font_medlarge, key='BATTERY CURRENT'), sg.Text('A')],
+        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='BATTERY VOLTAGE'), sg.Text('V')],
+        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='BATTERY CURRENT'), sg.Text('A')],
 ]
 
 power_frame = [
@@ -77,23 +72,23 @@ power_frame = [
 ]
 
 canvas_frame = [
-    [sg.Canvas(key="CANVAS")]
+    [sg.Canvas(key="CANVAS", pad=(0,0))]
 ]
 
 temperature_frame = [
-        [sg.Text('BATTERY', size=10, font=font_medsmall, justification='left'),    sg.Text('00.0', font=font_medsmall, key='BATTERY TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
-        [sg.Text('CONTROLLER', size=10, font=font_medsmall, justification='left'), sg.Text('00.0', font=font_medsmall, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
-        [sg.Text('PICO', size=10, font=font_medsmall, justification='left'),       sg.Text('00.0', font=font_medsmall, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('BATTERY', size=10, font=font_medsmall, justification='left'),    sg.Text('00.0', font=font_medsmall, enable_events=True, key='BATTERY TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
+        [sg.Text('CONTROLLER', size=10, font=font_medsmall, justification='left'), sg.Text('00.0', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
+        [sg.Text('PICO', size=10, font=font_medsmall, justification='left'),       sg.Text('00.0', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
     ]
 
 panel_VA_frame = [
         [sg.Text('PANEL', font=font_medsmall)],
-        [sg.Text('00.0', font=font_medlarge, key='PANEL VOLTAGE'), sg.Text('V')],
-        [sg.Text('00.0', font=font_medlarge, key='PANEL CURRENT'), sg.Text('A')],
+        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='PANEL VOLTAGE'), sg.Text('V')],
+        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='PANEL CURRENT'), sg.Text('A')],
 ]
 
 middle_frame = [
-    sg.Column(canvas_frame, size=(330,150), element_justification='left'),
+    sg.Column(canvas_frame, size=(330,160), element_justification='left'),
     sg.Column(temperature_frame, size=(212,85), element_justification='center'),
     sg.Column(panel_VA_frame, element_justification='center'),
 ]
@@ -142,24 +137,54 @@ monname = {
     12 : 'DEC'
 }
 
-fig = figure.Figure(figsize=(3.5, 1.35), dpi=100)
+plotables = {
+    'CHARGING POWER' : None,
+    'BATTERY CAPACITY' : None,
+    'BATTERY VOLTAGE' : None,
+    'BATTERY CURRENT' : None,
+    'BATTERY TEMPERATURE' : None,
+    'CONTROLLER TEMPERATURE' : None,
+    'PICO TEMPERATURE' : None,
+    'PANEL VOLTAGE' : None,
+    'PANEL CURRENT' : None,
+}
+
+fig = figure.Figure(figsize=(3.5, 1.6), dpi=100)
 t = np.arange(0, np.pi, .01)
-fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
-ax = fig.gca()
+ax = fig.add_subplot(111)
+y = np.abs(np.sin(2 * np.pi * t))
+line, = ax.plot(t, y)
 ax.margins(0)
 ax.grid()
 ax.get_xaxis().set_ticklabels([]) #set_visible(True)
 fig.patch.set_facecolor(bg_color)
 ax.set_facecolor(bg_color)
 
+def draw_figure(canvas, figure):
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
+    return figure_canvas_agg
 
 draw_figure(window["CANVAS"].TKCanvas, fig)
+
+dt = 0.01
+nextTime = time.perf_counter() + dt
 while True:
     now = datetime.today()
     
     window['TIME'].update(f'{now.hour:02d}:{now.minute:02d}:{now.second:02d}  {dayname[now.weekday()]} {now.day:02d}-{monname[now.month]}-{now.year}')
     
-    event, values = window.read(timeout=10)
+    if time.perf_counter() > nextTime:
+        nextTime = nextTime + dt
+
+        line.set_ydata(y + np.random.random(len(t)))
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+        ax.relim() #scale the y scale
+        ax.autoscale_view() #scale the y scale
+    
+    event, values = window.read(timeout=int(dt*1000))
     
     # End program if user closes window or
     # presses the OK button
@@ -176,5 +201,7 @@ while True:
             answer = sg.popup_yes_no('Quit?', 'Would you like to quit, instead?', keep_on_top=True)
             if answer == 'Yes':
                 break
+    elif event in plotables:
+        print(event)
             
 window.close()
