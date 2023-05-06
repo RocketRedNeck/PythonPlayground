@@ -118,6 +118,7 @@ layout = [
     [bottom_frame]
 ]
 window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
+window.Maximize()
 
 dayname = {
     0 : 'MON',
