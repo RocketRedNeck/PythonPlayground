@@ -5,7 +5,6 @@ from sys import platform
 #https://realpython.com/pysimplegui-python/
 import PySimpleGUI as sg
 
-import PIL.Image
 from datetime import datetime
 import time
 
