@@ -16,7 +16,9 @@ from matplotlib import figure, pyplot
 import serial
 import threading
 
-
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 matplotlib.use("TkAgg")
 
