@@ -60,24 +60,36 @@ top_frame = [
     ]
 ]
 
-charge_power_frame = [
-        [sg.Text('DEACTIVATED', font=font_medsmall, key='CHARGING STATE')],
-        [sg.Text('000',font=font_large, enable_events=True, key='CHARGING POWER'), sg.Text('W')],    
+
+charge_frame = [
+        [sg.Text('CHARGE OFF / LOAD OFF', font=font_medsmall, key='CHARGING STATE')],
+        [sg.Text(' --.-', font=font_medium, enable_events=True, key='BATTERY VOLTAGE'), sg.Text('V')],
+        [sg.Text('--.--', font=font_medium, enable_events=True, key='CHARGING CURRENT'), sg.Text('A')],
+        [sg.Text('  ---',font=font_medium, enable_events=True, key='CHARGING POWER'), sg.Text('W')],    
 ]
 battery_capacity_frame = [
         [sg.Text('BATTERY',font=font_medsmall)],
-        [sg.Text('000', font=font_large, enable_events=True, key='BATTERY CAPACITY'), sg.Text('%')],
+        [sg.Text('---', font=font_large, enable_events=True, key='BATTERY CAPACITY'), sg.Text('%')],
 ]
-battery_VA_frame = [
-        [sg.Text('BATTERY', font=font_medsmall)],
-        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='BATTERY VOLTAGE'), sg.Text('V')],
-        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='CHARGING CURRENT'), sg.Text('A')],
+load_frame = [
+        [sg.Text('LOAD', font=font_medsmall)],
+        [sg.Text(' --.-', font=font_medium, enable_events=True, key='LOAD VOLTAGE'), sg.Text('V')],
+        [sg.Text('--.--', font=font_medium, enable_events=True, key='LOAD CURRENT'), sg.Text('A')],
+        [sg.Text('  ---',font=font_medium, enable_events=True, key='LOAD POWER'), sg.Text('W')],    
+]
+
+panel_frame = [
+        [sg.Text('PANEL', font=font_medsmall)],
+        [sg.Text(' --.-', font=font_medium, enable_events=True, key='PANEL VOLTAGE'), sg.Text('V')],
+        [sg.Text('--.--', font=font_medium, enable_events=True, key='PANEL CURRENT'), sg.Text('A')],
+        [sg.Text('  ---',font=font_medium), sg.Text('-')],    
 ]
 
 power_frame = [
-    sg.Column(charge_power_frame, element_justification='center'),
     sg.Column(battery_capacity_frame, element_justification='center'),
-    sg.Column(battery_VA_frame, element_justification='center'),
+    sg.Column(charge_frame, element_justification='center'),
+    sg.Column(load_frame, element_justification='center'),
+    sg.Column(panel_frame, element_justification='center'),
 ]
 
 canvas_frame = [
@@ -85,21 +97,15 @@ canvas_frame = [
 ]
 
 temperature_frame = [
-        [sg.Text('BATTERY', size=10, font=font_medsmall, justification='left'),    sg.Text('00.0', font=font_medsmall, enable_events=True, key='BATTERY TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
-        [sg.Text('CONTROLLER', size=10, font=font_medsmall, justification='left'), sg.Text('00.0', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
-        [sg.Text('PICO', size=10, font=font_medsmall, justification='left'),       sg.Text('00.0', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('AMBIENT', size=10, font=font_medsmall, justification='left'),    sg.Text('--.-', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
+        [sg.Text('CONTROLLER', size=10, font=font_medsmall, justification='left'), sg.Text('--.-', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
+        [sg.Text('PICO', size=10, font=font_medsmall, justification='left'),       sg.Text('--.-', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
     ]
 
-panel_VA_frame = [
-        [sg.Text('PANEL', font=font_medsmall)],
-        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='PANEL VOLTAGE'), sg.Text('V')],
-        [sg.Text('00.0', font=font_medlarge, enable_events=True, key='PANEL CURRENT'), sg.Text('A')],
-]
 
 middle_frame = [
-    sg.Column(canvas_frame, size=(330,160), element_justification='left'),
-    sg.Column(temperature_frame, size=(212,85), element_justification='center'),
-    sg.Column(panel_VA_frame, element_justification='center'),
+    sg.Column(canvas_frame, element_justification='left'),
+    sg.Column(temperature_frame, element_justification='left'),
 ]
 
 bottom_frame = [
@@ -119,8 +125,8 @@ layout = [
     [sg.HSep()],
     [bottom_frame]
 ]
-window = sg.Window('Renogy Link', layout, margins=(10, 10), font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize() # Resizing not working right
-window.Maximize()
+window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize()
+#window.Maximize()
 
 dayname = {
     0 : 'MON',
@@ -148,18 +154,21 @@ monname = {
 }
 
 plotables = {
+    'AMBIENT TEMPERATURE' : None,
     'BATTERY CAPACITY' : None,
     'BATTERY VOLTAGE' : None,
-    'BATTERY TEMPERATURE' : None,
-    'CHARGING POWER' : None,
     'CHARGING CURRENT' : None,
+    'CHARGING POWER' : None,
     'CONTROLLER TEMPERATURE' : None,
+    'LOAD CURRENT' : None,
+    'LOAD POWER' : None,
+    'LOAD VOLTAGE' : None,
     'PANEL VOLTAGE' : None,
     'PANEL CURRENT' : None,
     'PICO TEMPERATURE' : None,
 }
 
-fig = figure.Figure(figsize=(3.5, 1.6), dpi=100)
+fig = figure.Figure(figsize=(5.0, 1.6), dpi=100)
 t = np.arange(0, np.pi, .01)
 ax = fig.add_subplot(111)
 y = np.abs(np.sin(2 * np.pi * t))
@@ -224,19 +233,29 @@ decoder = {
    2 : ("CHARGING CURRENT", "A", 0.01),
    3 : ("CONTROLLER TEMPERATURE", "C", 1.0, "BATTERY TEMPERATURE", "C", 1.0, True),
   35 : ("PICO TEMPERATURE", "C", 1.0),
+   4 : ("LOAD VOLTAGE", "V", 0.1),
+   5 : ("LOAD CURRENT", "A", 0.01),
+   6 : ("LOAD POWER", "W", 1.0),
    7 : ("PANEL VOLTAGE", "V", 0.1),
    8 : ("PANEL CURRENT", "A", 0.01),
    9 : ("CHARGING POWER", "W", 1.0),
   22 : ("DISCHARGE COUNT", "-", 1.0),
   23 : ("CHARGE COUNT", "-", 1.0),
   32 : ("CHARGING STATE", "-", 1.0, False, "Enum", 
-        {0:"DEACTIVATED",
-         1:"ACTIVATED",
-         2:"MPPT",
-         3:"EQUALIZING",
-         4:"BOOST",
-         5:"FLOAT",
-         6:"CURRENT LIMITING (OVERPOWER)"
+        {0:"CHARGE OFF / LOAD OFF",
+         1:"CHARGE ACTIVATED/ LOAD OFF",
+         2:"CHARGE MPPT / LOAD OFF",
+         3:"CHARGE EQUALIZING / LOAD OFF",
+         4:"CHARGE BOOST / LOAD OFF",
+         5:"CHARGE FLOAT / LOAD OFF",
+         6:"CHARGE LIMITING / LOAD OFF",
+         32768:"CHARGE OFF / LOAD ON",
+         32769:"CHARGE ACTIVATED / LOAD ON",
+         32770:"CHARGE MPPT / LOAD ON",
+         32771:"CHARGE EQUALIZING / LOAD ON",
+         32772:"CHARGE BOOST / LOAD ON",
+         32773:"CHARGE FLOAT / LOAD ON",
+         32774:"CHARGE LIMITING / LOAD ON"
          }
        ),
   33 : ("FAULT", "-", 1.0, False, "Mask",
@@ -361,12 +380,18 @@ def renogyDataLoop():
                                     if len(value) == 3:
                                         x = int(data[k:k+4],16)
                                         x = x * value[2]
-                                        if value[1] == 'W' or value[1] == '%':
+                                        if value[1] == '%':
                                             x = f'{int(x):3d}'
+                                        elif value[1] == 'W':
+                                            x = f'{int(x):5d}'
+                                        elif value[1] == 'V':
+                                            x = f'{x:5.1f}'
+                                        elif value[1] == 'A':
+                                            x = f'{x:5.2f}'
                                         elif value[1] == '-':
                                             x = f'{int(x):05d}'
                                         else:
-                                            x = f'{x:.1f}'
+                                            x = f'{x:4.1f}'
                                         element = window.find_element(value[0].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
                                             element.update(x)
@@ -378,7 +403,7 @@ def renogyDataLoop():
                                             s = 4
                                         d = data[k:k+s]
                                         if "Enum" == value[4]:
-                                            x = int(data[k:k+s])
+                                            x = int(data[k:k+s],16)
                                             if x in value[5]:
                                                 d = value[5][x]
                                         element = window.find_element(value[0].strip(), silent_on_error=True)
