@@ -126,7 +126,7 @@ layout = [
     [bottom_frame]
 ]
 window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize()
-#window.Maximize()
+window.Maximize()
 
 dayname = {
     0 : 'MON',
