@@ -1,10 +1,11 @@
 import os
-from sys import platform
+import platform
 
 #https://pypi.org/project/PySimpleGUI/
 #https://realpython.com/pysimplegui-python/
 import PySimpleGUI as sg
 
+from gauge import Gauge
 from datetime import datetime
 import time
 
@@ -51,6 +52,10 @@ font_large = (font_name, 96)
 
 font_default = font_medium
 
+window_size=(800,480)
+window_width = window_size[0]
+window_height = window_size[1]
+
 top_frame = [
     [sg.Text('FAULT:'), 
      sg.Text('0000', key='FAULT'), 
@@ -60,22 +65,28 @@ top_frame = [
     ]
 ]
 
+gwidth = window_width // 4
+gheight = window_height // 4
+battery_capacity_frame = [
+        [sg.Text('BATTERY',font=font_medsmall)],
+        [sg.Graph((gwidth, gheight), (-gwidth // 2, 0), (gwidth // 2, gheight), key='-Graph-')],
+        [sg.Text('---', font=font_medium, enable_events=True, key='BATTERY CAPACITY'), sg.Text('%')],
+]
 
 charge_frame = [
-        [sg.Text('CHARGE OFF / LOAD OFF', font=font_medsmall, key='CHARGING STATE')],
+        [sg.Text('CHARGE OFF', font=font_medsmall, key='CHARGING STATE')],
         [sg.Text(' --.-', font=font_medium, enable_events=True, key='BATTERY VOLTAGE'), sg.Text('V')],
         [sg.Text('--.--', font=font_medium, enable_events=True, key='CHARGING CURRENT'), sg.Text('A')],
         [sg.Text('  ---',font=font_medium, enable_events=True, key='CHARGING POWER'), sg.Text('W')],    
+        [sg.Text('  ---',font=font_medium, enable_events=True, key='CHARGE'), sg.Text('AH')],    
 ]
-battery_capacity_frame = [
-        [sg.Text('BATTERY',font=font_medsmall)],
-        [sg.Text('---', font=font_large, enable_events=True, key='BATTERY CAPACITY'), sg.Text('%')],
-]
+
 load_frame = [
-        [sg.Text('LOAD', font=font_medsmall)],
+        [sg.Text('LOAD', font=font_medsmall), sg.Text('OFF',font=font_medsmall, key='LOAD STATE')],
         [sg.Text(' --.-', font=font_medium, enable_events=True, key='LOAD VOLTAGE'), sg.Text('V')],
         [sg.Text('--.--', font=font_medium, enable_events=True, key='LOAD CURRENT'), sg.Text('A')],
         [sg.Text('  ---',font=font_medium, enable_events=True, key='LOAD POWER'), sg.Text('W')],    
+        [sg.Text('  ---',font=font_medium, enable_events=True, key='DISCHARGE'), sg.Text('AH')],    
 ]
 
 panel_frame = [
@@ -126,7 +137,32 @@ layout = [
     [bottom_frame]
 ]
 window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize()
-window.Maximize()
+if platform.system() == 'Linux':
+    window.Maximize()
+
+clock_radius = int(0.5*gwidth)
+min_angle = 5
+max_angle = 175
+ang_range = max_angle - min_angle
+gauge = Gauge(start_angle=min_angle, stop_angle=max_angle,
+              pointer_color='red',
+              clock_color=sg.theme_text_color(), 
+              major_tick_color=sg.theme_text_color(),
+              minor_tick_color=sg.theme_input_background_color(), 
+              pointer_outer_color=sg.theme_text_color(), 
+              major_tick_start_radius=int(0.75*clock_radius),
+              minor_tick_start_radius=int(0.75*clock_radius),
+              minor_tick_stop_radius=int(0.80*clock_radius),
+              major_tick_stop_radius=int(0.80*clock_radius), 
+              major_tick_step=45,
+              clock_radius=clock_radius, 
+              pointer_line_width=5, 
+              pointer_inner_radius=int(0.04*clock_radius), 
+              pointer_outer_radius=int(0.95*clock_radius), 
+              graph_elem=window['-Graph-'])
+
+gauge.change(degree=min_angle)
+gauge.change()
 
 dayname = {
     0 : 'MON',
@@ -195,6 +231,7 @@ def runRenogyDisplay():
         now = datetime.today()
         
         window['TIME'].update(f'{now.hour:02d}:{now.minute:02d}:{now.second:02d}  {dayname[now.weekday()]} {now.day:02d}-{monname[now.month]}-{now.year}')
+        gauge.step()
         
         if time.perf_counter() > nextTime:
             nextTime = nextTime + dt
@@ -221,12 +258,11 @@ def runRenogyDisplay():
             else:
                 answer = sg.popup_yes_no('Quit?', 'Would you like to quit, instead?', keep_on_top=True)
                 if answer == 'Yes':
-                    break
+                    window.close()
+                    exit()
         elif event in plotables:
             print(event)
-                
-    window.close()
-    
+  
 decoder = {
    0 : ("BATTERY CAPACITY", "%", 1.0),
    1 : ("BATTERY VOLTAGE", "V", 0.1),
@@ -239,23 +275,25 @@ decoder = {
    7 : ("PANEL VOLTAGE", "V", 0.1),
    8 : ("PANEL CURRENT", "A", 0.01),
    9 : ("CHARGING POWER", "W", 1.0),
+  17 : ("CHARGE", "AH", 1.0),
+  18 : ("DISCHARGE", "AH", 1.0),
   22 : ("DISCHARGE COUNT", "-", 1.0),
   23 : ("CHARGE COUNT", "-", 1.0),
   32 : ("CHARGING STATE", "-", 1.0, False, "Enum", 
-        {0:"CHARGE OFF / LOAD OFF",
-         1:"CHARGE ACTIVATED/ LOAD OFF",
-         2:"CHARGE MPPT / LOAD OFF",
-         3:"CHARGE EQUALIZING / LOAD OFF",
-         4:"CHARGE BOOST / LOAD OFF",
-         5:"CHARGE FLOAT / LOAD OFF",
-         6:"CHARGE LIMITING / LOAD OFF",
-         32768:"CHARGE OFF / LOAD ON",
-         32769:"CHARGE ACTIVATED / LOAD ON",
-         32770:"CHARGE MPPT / LOAD ON",
-         32771:"CHARGE EQUALIZING / LOAD ON",
-         32772:"CHARGE BOOST / LOAD ON",
-         32773:"CHARGE FLOAT / LOAD ON",
-         32774:"CHARGE LIMITING / LOAD ON"
+        {0:"CHARGE OFF",
+         1:"CHARGE ACTIVATED",
+         2:"CHARGE MPPT",
+         3:"CHARGE EQUALIZING",
+         4:"CHARGE BOOST",
+         5:"CHARGE FLOAT",
+         6:"CHARGE LIMITING",
+         32768:"CHARGE OFF",
+         32769:"CHARGE ACTIVATED",
+         32770:"CHARGE MPPT",
+         32771:"CHARGE EQUALIZING",
+         32772:"CHARGE BOOST",
+         32773:"CHARGE FLOAT",
+         32774:"CHARGE LIMITING"
          }
        ),
   33 : ("FAULT", "-", 1.0, False, "Mask",
@@ -307,29 +345,29 @@ def connect(exitOnFail = True):
     if ser is None:
         print('None of the expected COM ports were found')
         if exitOnFail:
-            exit()
-
-    ser.write(b'AT+ADDRESS=101\r\n')
-    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-    print(f'{line}')
-    ser.write(b'AT+ADDRESS?\r\n')
-    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-    print(f'{line}')
-    ser.write(b'AT+PARAMETER?\r\n')
-    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-    print(f'{line}')
-    ser.write(b'AT+PARAMETER=11,8,1,4\r\n')
-    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-    print(f'{line}')
-    ser.write(b'AT+PARAMETER?\r\n')
-    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-    print(f'{line}')
-    ser.write(b'AT+BAND=915000000\r\n')
-    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-    print(f'{line}')
-    ser.write(b'AT+BAND?\r\n')
-    line = ser.readline().decode('utf-8')   # read a '\n' terminated line
-    print(f'{line}')
+            return
+    else:
+        ser.write(b'AT+ADDRESS=101\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(f'{line}')
+        ser.write(b'AT+ADDRESS?\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(f'{line}')
+        ser.write(b'AT+PARAMETER?\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(f'{line}')
+        ser.write(b'AT+PARAMETER=11,8,1,4\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(f'{line}')
+        ser.write(b'AT+PARAMETER?\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(f'{line}')
+        ser.write(b'AT+BAND=915000000\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(f'{line}')
+        ser.write(b'AT+BAND?\r\n')
+        line = ser.readline().decode('utf-8')   # read a '\n' terminated line
+        print(f'{line}')
 
     return ser
     
@@ -353,7 +391,8 @@ def renogyDataLoop():
                     break
                 except Exception as e:
                     window['COM STATE'].update('USB-TTL DISCONNECTED')
-                    ser.close()
+                    if ser is not None:
+                        ser.close()
                     ser = connect(False)
                     
             if len(line) > 0:
@@ -381,20 +420,23 @@ def renogyDataLoop():
                                         x = int(data[k:k+4],16)
                                         x = x * value[2]
                                         if value[1] == '%':
-                                            x = f'{int(x):3d}'
+                                            s = f'{int(x):3d}'
                                         elif value[1] == 'W':
-                                            x = f'{int(x):5d}'
+                                            s = f'{int(x):5d}'
                                         elif value[1] == 'V':
-                                            x = f'{x:5.1f}'
+                                            s = f'{x:5.1f}'
                                         elif value[1] == 'A':
-                                            x = f'{x:5.2f}'
+                                            s = f'{x:5.2f}'
                                         elif value[1] == '-':
-                                            x = f'{int(x):05d}'
+                                            s = f'{int(x):05d}'
                                         else:
-                                            x = f'{x:4.1f}'
+                                            s = f'{x:4.1f}'
                                         element = window.find_element(value[0].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
-                                            element.update(x)
+                                            element.update(s)
+                                        print(f'({value[0]}, {value[1]}, {value[2]}) = {data[k:k+4]} = {x}')
+                                        if value[0] == 'BATTERY CAPACITY':
+                                            gauge.change(degree=int(x/100)*ang_range+min_angle, step=10)
 
                                     elif len(value) == 6:
                                         if value[3] == True:
@@ -409,6 +451,16 @@ def renogyDataLoop():
                                         element = window.find_element(value[0].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
                                             element.update(f'{d}')
+                                        if value[0] == 'CHARGING STATE':
+                                            if x >= 32768:
+                                                load_state = 'ON'
+                                            else:
+                                                load_state = 'OFF'
+                                                
+                                            element = window.find_element('LOAD STATE', silent_on_error=True)
+                                            if element is not None and not isinstance(element, sg.ErrorElement):
+                                                element.update(f'{load_state}')
+                                                
                                             
                                     elif len(value) == 7:
                                         x = int(data[k:k+2],16)
