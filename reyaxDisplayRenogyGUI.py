@@ -100,12 +100,12 @@ panel_frame = [
 
 temperature_frame = [
         [sg.Text('TEMPERATURE', font=font_medsmall)],
-        [sg.Text('AMBI', font=font_medsmall, justification='left'),    sg.Text('----', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
-        [sg.Text('CTRL', font=font_medsmall, justification='left'), sg.Text('----', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
-        [sg.Text('PICO', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
-        [sg.Text('BAT1', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='BAT1 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
-        [sg.Text('BAT2', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='BAT2 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
-        [sg.Text('BAT3', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='BAT3 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('AMBI', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
+        [sg.Text('CTRL', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
+        [sg.Text('PICO', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('BAT1', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='BAT1 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('BAT2', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='BAT2 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('BAT3', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='BAT3 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
 ]
 
 power_frame = [
@@ -122,7 +122,7 @@ canvas_frame = [
 
 
 middle_frame = [
-    sg.Column(canvas_frame, element_justification='left')
+    sg.Column(canvas_frame, element_justification='center')
 ]
 
 bottom_frame = [
@@ -212,7 +212,7 @@ plotables = {
     'PICO TEMPERATURE' : None,
 }
 
-fig = figure.Figure(figsize=(8.0, 1.6), dpi=100)
+fig = figure.Figure(figsize=(8.0, 1.5), dpi=100)
 t = np.arange(0, np.pi, np.pi/24)
 ax = fig.add_subplot(111)
 y = np.abs(np.sin(2 * np.pi * t))
