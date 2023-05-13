@@ -135,11 +135,11 @@ bottom_frame = [
 
 layout = [
     [top_frame],
-    [sg.HSep()],
+    [sg.HSep(pad=(0,0))],
     [power_frame],
     #[sg.HSep()],
     [middle_frame],
-    [sg.HSep()],
+    [sg.HSep(pad=(0,0))],
     [bottom_frame]
 ]
 window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize()
