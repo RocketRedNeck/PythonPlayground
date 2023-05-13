@@ -116,8 +116,29 @@ power_frame = [
     sg.Column(temperature_frame, element_justification='center'),
 ]
 
+plot_mod = 5
+max_plot_n = 24 * 60 * plot_mod
+current_plotable = 'BATTERY CAPACITY'
+
+plotables = {
+    'AMBIENT TEMPERATURE'   : np.full(max_plot_n, 0.0),
+    'BATTERY CAPACITY'      : np.full(max_plot_n, 0.0),
+    'BATTERY VOLTAGE'       : np.full(max_plot_n, 0.0),
+    'CHARGING CURRENT'      : np.full(max_plot_n, 0.0),
+    'CHARGING POWER'        : np.full(max_plot_n, 0.0),
+    'CHARGE'                : np.full(max_plot_n, 0.0),
+    'CONTROLLER TEMPERATURE': np.full(max_plot_n, 0.0),
+    'LOAD CURRENT'          : np.full(max_plot_n, 0.0),
+    'LOAD POWER'            : np.full(max_plot_n, 0.0),
+    'LOAD VOLTAGE'          : np.full(max_plot_n, 0.0),
+    'DISCHARGE'             : np.full(max_plot_n, 0.0),
+    'PANEL VOLTAGE'         : np.full(max_plot_n, 0.0),
+    'PANEL CURRENT'         : np.full(max_plot_n, 0.0),
+    'PICO TEMPERATURE'      : np.full(max_plot_n, 0.0),
+}
+
 canvas_frame = [
-    [sg.Canvas(key="CANVAS", pad=(0,0))]
+    [sg.Text(current_plotable, font=font_medsmall, key='CURRENT PLOTABLE'), sg.Canvas(key="CANVAS", pad=(0,0))]
 ]
 
 
@@ -195,25 +216,8 @@ monname = {
     12 : 'DEC'
 }
 
-plotables = {
-    'AMBIENT TEMPERATURE' : None,
-    'BATTERY CAPACITY' : None,
-    'BATTERY VOLTAGE' : None,
-    'CHARGING CURRENT' : None,
-    'CHARGING POWER' : None,
-    'CHARGE' : None,
-    'CONTROLLER TEMPERATURE' : None,
-    'LOAD CURRENT' : None,
-    'LOAD POWER' : None,
-    'LOAD VOLTAGE' : None,
-    'DISCHARGE' : None,
-    'PANEL VOLTAGE' : None,
-    'PANEL CURRENT' : None,
-    'PICO TEMPERATURE' : None,
-}
-
-fig = figure.Figure(figsize=(8.0, 1.5), dpi=100)
-t = np.arange(0, np.pi, np.pi/24)
+fig = figure.Figure(figsize=(6.0, 1.5))#, dpi=100)
+t = np.arange(0, np.pi, np.pi/max_plot_n)
 ax = fig.add_subplot(111)
 y = np.abs(np.sin(2 * np.pi * t))
 line, = ax.plot(t, y)
@@ -231,20 +235,21 @@ def draw_figure(canvas, figure):
 
 def runRenogyDisplay():
     global window
+    global current_plotable
     draw_figure(window["CANVAS"].TKCanvas, fig)
 
     dt = 0.01
     nextTime = time.perf_counter() + dt
+        
     while True:
         now = datetime.today()
-        
         window['TIME'].update(f'{now.hour:02d}:{now.minute:02d}:{now.second:02d}  {dayname[now.weekday()]} {now.day:02d}-{monname[now.month]}-{now.year}')
         gauge.step()
         
         if time.perf_counter() > nextTime:
             nextTime = nextTime + dt
-
-            line.set_ydata(y + np.random.random(len(t)))
+            window['CURRENT PLOTABLE'].update(current_plotable)
+            line.set_ydata(plotables[current_plotable]) #y + np.random.random(len(t)))
             fig.canvas.draw()
             fig.canvas.flush_events()
             ax.relim() #scale the y scale
@@ -269,7 +274,8 @@ def runRenogyDisplay():
                     window.close()
                     exit()
         elif event in plotables:
-            print(event)
+            current_plotable = event
+            print(current_plotable)
   
 decoder = {
    0 : ("BATTERY CAPACITY", "%", 1.0),
@@ -424,9 +430,11 @@ def renogyDataLoop():
                             elif index == 0:
                                 for key, value in decoder.items():
                                     k = 4*key
+                                    y = np.nan
                                     if len(value) == 3:
                                         x = int(data[k:k+4],16)
                                         x = x * value[2]
+                                        y = x
                                         if value[1] == '%':
                                             s = f'{int(x):3d}'
                                         elif value[1] == 'W':
@@ -456,8 +464,9 @@ def renogyDataLoop():
                                         else:
                                             s = 4
                                         d = data[k:k+s]
+                                        x = int(data[k:k+s],16)
+                                        y = x
                                         if "Enum" == value[4]:
-                                            x = int(data[k:k+s],16)
                                             if x in value[5]:
                                                 d = value[5][x]
                                         element = window.find_element(value[0].strip(), silent_on_error=True)
@@ -493,6 +502,15 @@ def renogyDataLoop():
                                         element = window.find_element(value[3].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
                                             element.update(f'{s}')
+                                        y = x
+                                    
+                                    
+                                    if value[0] in plotables:
+                                        now = datetime.now()
+                                        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                                        mod = int((now - midnight).seconds) // int(60 / plot_mod)
+                                        plotables[value[0]][mod] = y
+                                        print(f'{value[0]}[{mod}] = {y}')
                                         
             else:
                 frameCount = frameCount + 1
