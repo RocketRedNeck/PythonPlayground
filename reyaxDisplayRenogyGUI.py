@@ -101,7 +101,7 @@ panel_frame = [
 temperature_frame = [
         [sg.Text('TEMPERATURE', font=font_medsmall)],
         [sg.Text('AMBI', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
-        [sg.Text('CTRL', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
+        [sg.Text('CTRL', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='CTRL TEMPERATURE'), sg.Text('C', font=font_medsmall)],
         [sg.Text('PICO', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
         [sg.Text('BAT1', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='BAT1 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
         [sg.Text('BAT2', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='BAT2 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
@@ -127,7 +127,7 @@ plotables = {
     'CHARGING CURRENT'      : np.full(max_plot_n, 0.0),
     'CHARGING POWER'        : np.full(max_plot_n, 0.0),
     'CHARGE'                : np.full(max_plot_n, 0.0),
-    'CONTROLLER TEMPERATURE': np.full(max_plot_n, 0.0),
+    'CTRL TEMPERATURE'     : np.full(max_plot_n, 0.0),
     'LOAD CURRENT'          : np.full(max_plot_n, 0.0),
     'LOAD POWER'            : np.full(max_plot_n, 0.0),
     'LOAD VOLTAGE'          : np.full(max_plot_n, 0.0),
@@ -135,6 +135,9 @@ plotables = {
     'PANEL VOLTAGE'         : np.full(max_plot_n, 0.0),
     'PANEL CURRENT'         : np.full(max_plot_n, 0.0),
     'PICO TEMPERATURE'      : np.full(max_plot_n, 0.0),
+    'BAT1 TEMPERATURE'      : np.full(max_plot_n, 0.0),
+    'BAT2 TEMPERATURE'      : np.full(max_plot_n, 0.0),
+    'BAT3 TEMPERATURE'      : np.full(max_plot_n, 0.0),
 }
 
 canvas_frame = [
@@ -216,7 +219,7 @@ monname = {
     12 : 'DEC'
 }
 
-fig = figure.Figure(figsize=(6.0, 1.5))#, dpi=100)
+fig = figure.Figure(figsize=(9.0, 1.5), dpi=100)
 t = np.arange(0, np.pi, np.pi/max_plot_n)
 ax = fig.add_subplot(111)
 y = np.abs(np.sin(2 * np.pi * t))
@@ -281,7 +284,7 @@ decoder = {
    0 : ("BATTERY CAPACITY", "%", 1.0),
    1 : ("BATTERY VOLTAGE", "V", 0.1),
    2 : ("CHARGING CURRENT", "A", 0.01),
-   3 : ("CONTROLLER TEMPERATURE", "C", 1.0, "BATTERY TEMPERATURE", "C", 1.0, True),
+   3 : ("CTRL TEMPERATURE", "C", 1.0, "BATTERY TEMPERATURE", "C", 1.0, True),
   35 : ("PICO TEMPERATURE", "C", 1.0),
    4 : ("LOAD VOLTAGE", "V", 0.1),
    5 : ("LOAD CURRENT", "A", 0.01),
@@ -320,7 +323,7 @@ decoder = {
          24:"PHOTOVOLTAIC INPUT SIDE SHORT",
          23:"PHOTOVOLTAIC INPUT OVERPOWER",
          22:"AMBIENT TEMPERATURE TOO HIGH",
-         21:"CONTROLLER TEMPERATURE TOO HIGH",
+         21:"CTRL TEMPERATURE TOO HIGH",
          20:"LOAD OVER-POWER/CURRENT",
          19:"LOAD SHORT",
          18:"BATTERY UNDER-VOLTAGE",
@@ -510,7 +513,7 @@ def renogyDataLoop():
                                         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
                                         mod = int((now - midnight).seconds) // int(60 / plot_mod)
                                         plotables[value[0]][mod] = y
-                                        print(f'{value[0]}[{mod}] = {y}')
+                                        #print(f'{value[0]}[{mod}] = {y}')
                                         
             else:
                 frameCount = frameCount + 1
