@@ -58,8 +58,8 @@ window_height = window_size[1]
 
 top_frame = [
     [sg.Text('FAULT:'), 
-     sg.Text('0000', key='FAULT'), 
-     sg.Text('HH:YY::SS', key='TIME')
+     sg.Text('0000', size=30, key='FAULT'), 
+     sg.Text('HH:MM::SS  DAY DD-MON-YYYY', key='TIME')
     ]
 ]
 
