@@ -59,8 +59,6 @@ window_height = window_size[1]
 top_frame = [
     [sg.Text('FAULT:'), 
      sg.Text('0000', key='FAULT'), 
-     sg.Text('F:'), sg.Text('00000', key='CHARGE COUNT'), 
-     sg.Text('E:'), sg.Text('00000', size=11, key='DISCHARGE COUNT'), 
      sg.Text('HH:YY::SS', key='TIME')
     ]
 ]
@@ -70,7 +68,12 @@ gheight = window_height // 4
 battery_capacity_frame = [
         [sg.Text('BATTERY',font=font_medsmall)],
         [sg.Graph((gwidth, gheight), (-gwidth // 2, 0), (gwidth // 2, gheight), key='-Graph-')],
-        [sg.Text('---', font=font_medium, enable_events=True, key='BATTERY CAPACITY'), sg.Text('%')],
+        [sg.Text('E',font=font_medium), 
+         sg.Text('-----', font=font_small, key='DISCHARGE COUNT'), 
+         sg.Text('---', font=font_medium, enable_events=True, key='BATTERY CAPACITY'), sg.Text('%'),
+         sg.Text('-----', font=font_small, key='CHARGE COUNT'),
+         sg.Text('F',font=font_medium)
+        ]
 ]
 
 charge_frame = [
@@ -93,7 +96,13 @@ panel_frame = [
         [sg.Text('PANEL', font=font_medsmall)],
         [sg.Text(' --.-', font=font_medium, enable_events=True, key='PANEL VOLTAGE'), sg.Text('V')],
         [sg.Text('--.--', font=font_medium, enable_events=True, key='PANEL CURRENT'), sg.Text('A')],
-        [sg.Text('  ---',font=font_medium), sg.Text('-')],    
+]
+
+temperature_frame = [
+        [sg.Text('TEMPERATURE', font=font_medsmall)],
+        [sg.Text('AMBI', font=font_medsmall, justification='left'),    sg.Text('----', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
+        [sg.Text('CTRL', font=font_medsmall, justification='left'), sg.Text('----', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
+        [sg.Text('PICO', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
 ]
 
 power_frame = [
@@ -101,22 +110,16 @@ power_frame = [
     sg.Column(charge_frame, element_justification='center'),
     sg.Column(load_frame, element_justification='center'),
     sg.Column(panel_frame, element_justification='center'),
+    sg.Column(temperature_frame, element_justification='center'),
 ]
 
 canvas_frame = [
     [sg.Canvas(key="CANVAS", pad=(0,0))]
 ]
 
-temperature_frame = [
-        [sg.Text('AMBIENT', size=10, font=font_medsmall, justification='left'),    sg.Text('--.-', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
-        [sg.Text('CONTROLLER', size=10, font=font_medsmall, justification='left'), sg.Text('--.-', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
-        [sg.Text('PICO', size=10, font=font_medsmall, justification='left'),       sg.Text('--.-', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
-    ]
-
 
 middle_frame = [
-    sg.Column(canvas_frame, element_justification='left'),
-    sg.Column(temperature_frame, element_justification='left'),
+    sg.Column(canvas_frame, element_justification='left')
 ]
 
 bottom_frame = [
@@ -195,17 +198,19 @@ plotables = {
     'BATTERY VOLTAGE' : None,
     'CHARGING CURRENT' : None,
     'CHARGING POWER' : None,
+    'CHARGE' : None,
     'CONTROLLER TEMPERATURE' : None,
     'LOAD CURRENT' : None,
     'LOAD POWER' : None,
     'LOAD VOLTAGE' : None,
+    'DISCHARGE' : None,
     'PANEL VOLTAGE' : None,
     'PANEL CURRENT' : None,
     'PICO TEMPERATURE' : None,
 }
 
-fig = figure.Figure(figsize=(5.0, 1.6), dpi=100)
-t = np.arange(0, np.pi, .01)
+fig = figure.Figure(figsize=(8.0, 1.6), dpi=100)
+t = np.arange(0, np.pi, np.pi/24)
 ax = fig.add_subplot(111)
 y = np.abs(np.sin(2 * np.pi * t))
 line, = ax.plot(t, y)
@@ -427,6 +432,10 @@ def renogyDataLoop():
                                             s = f'{x:5.1f}'
                                         elif value[1] == 'A':
                                             s = f'{x:5.2f}'
+                                        elif value[1] == 'AH':
+                                            s = f'{int(x):5d}'
+                                        elif value[1] == 'C':
+                                            s = f'{x:4.0f}'
                                         elif value[1] == '-':
                                             s = f'{int(x):05d}'
                                         else:
@@ -434,7 +443,7 @@ def renogyDataLoop():
                                         element = window.find_element(value[0].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
                                             element.update(s)
-                                        print(f'({value[0]}, {value[1]}, {value[2]}) = {data[k:k+4]} = {x}')
+
                                         if value[0] == 'BATTERY CAPACITY':
                                             gauge.change(degree=int(x/100)*ang_range+min_angle, step=10)
 
@@ -465,14 +474,22 @@ def renogyDataLoop():
                                     elif len(value) == 7:
                                         x = int(data[k:k+2],16)
                                         x = x * value[2]
+                                        if value[1] == 'C':
+                                            s = f'{x:4.0f}'
+                                        else:
+                                            s = f'{x:4.1f}'                                        
                                         element = window.find_element(value[0].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
-                                            element.update(f'{x:4.1f}')
+                                            element.update(f'{s}')
                                         x = int(data[k+2:k+4],16)
                                         x = x * value[5]
+                                        if value[1] == 'C':
+                                            s = f'{x:4.0f}'
+                                        else:
+                                            s = f'{x:4.1f}'                                        
                                         element = window.find_element(value[3].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
-                                            element.update(f'{x:4.1f}')
+                                            element.update(f'{s}')
                                         
             else:
                 frameCount = frameCount + 1
