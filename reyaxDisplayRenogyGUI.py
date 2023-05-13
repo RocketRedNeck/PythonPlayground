@@ -103,6 +103,9 @@ temperature_frame = [
         [sg.Text('AMBI', font=font_medsmall, justification='left'),    sg.Text('----', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
         [sg.Text('CTRL', font=font_medsmall, justification='left'), sg.Text('----', font=font_medsmall, enable_events=True, key='CONTROLLER TEMPERATURE'), sg.Text('C', font=font_medsmall)],
         [sg.Text('PICO', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('BAT1', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='BAT1 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('BAT2', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='BAT2 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
+        [sg.Text('BAT3', font=font_medsmall, justification='left'),       sg.Text('----', font=font_medsmall, enable_events=True, key='BAT3 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
 ]
 
 power_frame = [
