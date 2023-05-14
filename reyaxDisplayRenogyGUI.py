@@ -23,6 +23,16 @@ os.chdir(dname)
 
 matplotlib.use("TkAgg")
 
+design_size = (800,480)
+design_width = design_size[0]
+design_height= design_size[1]
+window_size=(1024,600)
+window_width = window_size[0]
+window_height = window_size[1]
+wscale = window_width / design_width
+hscale = window_height / design_height
+ascale = (wscale + hscale)/2
+
 # Add new theme colors and settings
 bg_color = '#e8a202'
 light_bg_color = '#FFcc66'
@@ -43,18 +53,15 @@ invisible = (sg.theme_background_color(), sg.theme_background_color())
 #sg.popup_get_text('Renogy theme looks like this') 
 
 # 2191 and 2193
+fscale = hscale
 font_name = 'Liberation Mono'
-font_small = (font_name, 7,)
-font_medsmall = (font_name, 13)
-font_medium = (font_name, 15)
-font_medlarge = (font_name, 38)
-font_large = (font_name, 96)
+font_small = (font_name, int(7*fscale),)
+font_medsmall = (font_name, int(13*fscale))
+font_medium = (font_name, int(15*fscale))
+font_medlarge = (font_name, int(38*fscale))
+font_large = (font_name, int(96*fscale))
 
 font_default = font_medium
-
-window_size=(1024,600) #(800,480)
-window_width = window_size[0]
-window_height = window_size[1]
 
 top_frame = [
     [sg.Text('FAULT:'), 
@@ -100,7 +107,7 @@ panel_frame = [
 
 temperature_frame = [
         [sg.Text('TEMPERATURE', font=font_medsmall)],
-        [sg.Text('AMBI', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='AMBIENT TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
+        [sg.Text('AMBI', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='AMBI TEMPERATURE'),    sg.Text('C', font=font_medsmall)],
         [sg.Text('CTRL', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='CTRL TEMPERATURE'), sg.Text('C', font=font_medsmall)],
         [sg.Text('PICO', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='PICO TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
         [sg.Text('BAT1', font=font_medsmall, justification='left'),  sg.Text('----', font=font_medsmall, enable_events=True, key='BAT1 TEMPERATURE'),       sg.Text('C', font=font_medsmall)],
@@ -116,12 +123,12 @@ power_frame = [
     sg.Column(temperature_frame, element_justification='center'),
 ]
 
-plot_mod = 5
+plot_mod = 1
 max_plot_n = 24 * 60 * plot_mod
 current_plotable = 'BATTERY CAPACITY'
 
 plotables = {
-    'AMBIENT TEMPERATURE'   : np.full(max_plot_n, 0.0),
+    'AMBI TEMPERATURE'      : np.full(max_plot_n, 0.0),
     'BATTERY CAPACITY'      : np.full(max_plot_n, 0.0),
     'BATTERY VOLTAGE'       : np.full(max_plot_n, 0.0),
     'CHARGING CURRENT'      : np.full(max_plot_n, 0.0),
@@ -141,7 +148,8 @@ plotables = {
 }
 
 canvas_frame = [
-    [sg.Text(current_plotable, font=font_medsmall, key='CURRENT PLOTABLE'), sg.Canvas(key="CANVAS", pad=(0,0))]
+    [#sg.Text(current_plotable, font=font_medsmall, key='CURRENT PLOTABLE'),
+     sg.Canvas(key="CANVAS", pad=(0,0))]
 ]
 
 
@@ -219,11 +227,12 @@ monname = {
     12 : 'DEC'
 }
 
-fig = figure.Figure(figsize=(9.0, 1.5), dpi=100)
+fig = figure.Figure(figsize=(6.0, 2.0), dpi=100)
 t = np.arange(0, np.pi, np.pi/max_plot_n)
 ax = fig.add_subplot(111)
 y = np.abs(np.sin(2 * np.pi * t))
 line, = ax.plot(t, y)
+ax.set_title('Last 24 Hours')
 ax.margins(0)
 ax.grid()
 ax.get_xaxis().set_ticklabels([]) #set_visible(True)
@@ -251,10 +260,11 @@ def runRenogyDisplay():
         
         if time.perf_counter() > nextTime:
             nextTime = nextTime + dt
-            window['CURRENT PLOTABLE'].update(current_plotable)
+            #window['CURRENT PLOTABLE'].update(current_plotable)
             line.set_ydata(plotables[current_plotable]) #y + np.random.random(len(t)))
             fig.canvas.draw()
             fig.canvas.flush_events()
+            ax.set_ylabel(current_plotable)
             ax.relim() #scale the y scale
             ax.autoscale_view() #scale the y scale
         
@@ -272,7 +282,7 @@ def runRenogyDisplay():
                     pass
                 break
             else:
-                answer = sg.popup_yes_no('Quit?', 'Would you like to quit, instead?', keep_on_top=True)
+                answer = sg.popup_yes_no('Enter Maintenance Mode?', 'Would you like to enter maintenance mode, instead?', keep_on_top=True)
                 if answer == 'Yes':
                     window.close()
                     exit()
@@ -322,7 +332,7 @@ decoder = {
          25:"PHOTOVOLTAIC INPUT SIDE OVER VOLTAGE",
          24:"PHOTOVOLTAIC INPUT SIDE SHORT",
          23:"PHOTOVOLTAIC INPUT OVERPOWER",
-         22:"AMBIENT TEMPERATURE TOO HIGH",
+         22:"AMBI TEMPERATURE TOO HIGH",
          21:"CTRL TEMPERATURE TOO HIGH",
          20:"LOAD OVER-POWER/CURRENT",
          19:"LOAD SHORT",
