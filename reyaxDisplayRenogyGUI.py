@@ -52,7 +52,7 @@ font_large = (font_name, 96)
 
 font_default = font_medium
 
-window_size=(800,480)
+window_size=(1024,600) #(800,480)
 window_width = window_size[0]
 window_height = window_size[1]
 
@@ -166,7 +166,7 @@ layout = [
     [sg.HSep(pad=(0,0))],
     [bottom_frame]
 ]
-window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=(800,480), keep_on_top=True).Finalize()
+window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=window_size, keep_on_top=True).Finalize()
 if platform.system() == 'Linux':
     window.Maximize()
 
