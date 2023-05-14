@@ -459,7 +459,8 @@ def renogyDataLoop():
                                             element.update(s)
 
                                         if value[0] == 'BATTERY CAPACITY':
-                                            gauge.change(degree=int(x/100)*ang_range+min_angle, step=10)
+                                            degree = int((x/100)*ang_range+min_angle)
+                                            gauge.change(degree=degree, step=10)
 
                                     elif len(value) == 6:
                                         if value[3] == True:
