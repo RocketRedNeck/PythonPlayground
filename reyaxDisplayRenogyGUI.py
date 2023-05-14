@@ -53,7 +53,7 @@ invisible = (sg.theme_background_color(), sg.theme_background_color())
 #sg.popup_get_text('Renogy theme looks like this') 
 
 # 2191 and 2193
-fscale = hscale
+fscale = hscale #np.sqrt(hscale**2 + wscale**2)
 font_name = 'Liberation Mono'
 font_small = (font_name, int(7*fscale),)
 font_medsmall = (font_name, int(13*fscale))
@@ -64,7 +64,8 @@ font_large = (font_name, int(96*fscale))
 font_default = font_medium
 
 top_frame = [
-    [sg.Text('FAULT:'), 
+    [sg.Button(key='QUIT', button_color=invisible, image_filename='img_small.png', border_width=0),
+     sg.Text('FAULT:'), 
      sg.Text('0000', size=30, key='FAULT'), 
      sg.Text('HH:MM::SS  DAY DD-MON-YYYY', key='TIME')
     ]
@@ -158,8 +159,7 @@ middle_frame = [
 ]
 
 bottom_frame = [
-    [sg.Button(key='QUIT', button_color=invisible, image_filename='img_small.png', border_width=0),
-     sg.Text('MODEL No. ----------------', size=28, key='MODEL No.'),
+    [sg.Text('MODEL No. ----------------', size=28, key='MODEL No.'),
      sg.Text('--------------------', size=20, justification='right', key='COM STATE'),
      sg.Text('000000000', key='FRAME COUNT')
     ]
