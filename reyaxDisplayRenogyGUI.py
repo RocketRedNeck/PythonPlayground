@@ -17,6 +17,16 @@ from matplotlib import figure, pyplot
 import serial
 import threading
 
+if platform.system() == 'Linux':
+    # on raspi (linux) turn off the wlan0 and use the dongle, it works better
+    # wlan0 should be off from cron job at reboot, but sometimes it does not
+    # take, so we let this app try as well
+    try:
+        os.system('sudo ifconfig wlan0 down')
+    except Exception as e:
+        print(e)
+        print('Carrying On')
+
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
@@ -62,6 +72,35 @@ font_medlarge = (font_name, int(38*fscale))
 font_large = (font_name, int(96*fscale))
 
 font_default = font_medium
+
+plot_mod = 1
+max_plot_n = 24 * 60 * plot_mod
+min_plot_n = 60 * plot_mod
+current_plotable = 'BATTERY CAPACITY'
+
+fig = figure.Figure(figsize=(5.7, 2.0), dpi=100)
+t = np.arange(0, np.pi, np.pi/max_plot_n)
+ax = fig.add_subplot(111)
+y = np.abs(np.sin(2 * np.pi * t))
+line, = ax.plot(t, y)
+ax.set_title('Last 24 Hours')
+ax.margins(0)
+ax.grid()
+ax.get_xaxis().set_ticklabels([]) #set_visible(True)
+fig.patch.set_facecolor(bg_color)
+ax.set_facecolor(bg_color)
+
+fig1 = figure.Figure(figsize=(4.0, 2.0), dpi=100)
+t1 = np.arange(0, np.pi, np.pi/min_plot_n)
+ax1 = fig1.add_subplot(111)
+y1 = np.abs(np.sin(2 * np.pi * t1))
+line1, = ax1.plot(t1, y1)
+ax1.set_title('Last Hour')
+ax1.margins(0)
+ax1.grid()
+ax1.get_xaxis().set_ticklabels([]) #set_visible(True)
+fig1.patch.set_facecolor(bg_color)
+ax1.set_facecolor(bg_color)
 
 top_frame = [
     [sg.Button(key='QUIT', button_color=invisible, image_filename='img_small.png', border_width=0),
@@ -124,38 +163,40 @@ power_frame = [
     sg.Column(temperature_frame, element_justification='center'),
 ]
 
-plot_mod = 1
-max_plot_n = 24 * 60 * plot_mod
-current_plotable = 'BATTERY CAPACITY'
 
 plotables = {
-    'AMBI TEMPERATURE'      : np.full(max_plot_n, 0.0),
-    'BATTERY CAPACITY'      : np.full(max_plot_n, 0.0),
-    'BATTERY VOLTAGE'       : np.full(max_plot_n, 0.0),
-    'CHARGING CURRENT'      : np.full(max_plot_n, 0.0),
-    'CHARGING POWER'        : np.full(max_plot_n, 0.0),
-    'CHARGE'                : np.full(max_plot_n, 0.0),
-    'CTRL TEMPERATURE'     : np.full(max_plot_n, 0.0),
-    'LOAD CURRENT'          : np.full(max_plot_n, 0.0),
-    'LOAD POWER'            : np.full(max_plot_n, 0.0),
-    'LOAD VOLTAGE'          : np.full(max_plot_n, 0.0),
-    'DISCHARGE'             : np.full(max_plot_n, 0.0),
-    'PANEL VOLTAGE'         : np.full(max_plot_n, 0.0),
-    'PANEL CURRENT'         : np.full(max_plot_n, 0.0),
-    'PICO TEMPERATURE'      : np.full(max_plot_n, 0.0),
-    'BAT1 TEMPERATURE'      : np.full(max_plot_n, 0.0),
-    'BAT2 TEMPERATURE'      : np.full(max_plot_n, 0.0),
-    'BAT3 TEMPERATURE'      : np.full(max_plot_n, 0.0),
+    'AMBI TEMPERATURE'      : np.full(max_plot_n, y),
+    'BATTERY CAPACITY'      : np.full(max_plot_n, y),
+    'BATTERY VOLTAGE'       : np.full(max_plot_n, y),
+    'CHARGING CURRENT'      : np.full(max_plot_n, y),
+    'CHARGING POWER'        : np.full(max_plot_n, y),
+    'CHARGE'                : np.full(max_plot_n, y),
+    'CTRL TEMPERATURE'      : np.full(max_plot_n, y),
+    'LOAD CURRENT'          : np.full(max_plot_n, y),
+    'LOAD POWER'            : np.full(max_plot_n, y),
+    'LOAD VOLTAGE'          : np.full(max_plot_n, y),
+    'DISCHARGE'             : np.full(max_plot_n, y),
+    'PANEL VOLTAGE'         : np.full(max_plot_n, y),
+    'PANEL CURRENT'         : np.full(max_plot_n, y),
+    'PICO TEMPERATURE'      : np.full(max_plot_n, y),
+    'BAT1 TEMPERATURE'      : np.full(max_plot_n, y),
+    'BAT2 TEMPERATURE'      : np.full(max_plot_n, y),
+    'BAT3 TEMPERATURE'      : np.full(max_plot_n, y),
 }
 
 canvas_frame = [
-    [#sg.Text(current_plotable, font=font_medsmall, key='CURRENT PLOTABLE'),
-     sg.Canvas(key="CANVAS", pad=(0,0))]
+    [sg.Canvas(key="CANVAS", pad=(0,0)),
+    ]
 ]
 
+canvas1_frame = [
+    [sg.Canvas(key="CANVAS1", pad=(0,0)),
+    ]
+]
 
 middle_frame = [
-    sg.Column(canvas_frame, element_justification='center')
+    sg.Column(canvas_frame, element_justification='center'),
+    sg.Column(canvas1_frame, element_justification='center')
 ]
 
 bottom_frame = [
@@ -175,8 +216,8 @@ layout = [
     [bottom_frame]
 ]
 window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=window_size, keep_on_top=True).Finalize()
-if platform.system() == 'Linux':
-    window.Maximize()
+#if platform.system() == 'Linux':
+#    window.Maximize()
 
 clock_radius = int(0.5*gwidth)
 min_angle = 5
@@ -227,18 +268,6 @@ monname = {
     12 : 'DEC'
 }
 
-fig = figure.Figure(figsize=(6.0, 2.0), dpi=100)
-t = np.arange(0, np.pi, np.pi/max_plot_n)
-ax = fig.add_subplot(111)
-y = np.abs(np.sin(2 * np.pi * t))
-line, = ax.plot(t, y)
-ax.set_title('Last 24 Hours')
-ax.margins(0)
-ax.grid()
-ax.get_xaxis().set_ticklabels([]) #set_visible(True)
-fig.patch.set_facecolor(bg_color)
-ax.set_facecolor(bg_color)
-
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
     figure_canvas_agg.draw()
@@ -249,6 +278,7 @@ def runRenogyDisplay():
     global window
     global current_plotable
     draw_figure(window["CANVAS"].TKCanvas, fig)
+    draw_figure(window["CANVAS1"].TKCanvas, fig1)
 
     dt = 0.01
     nextTime = time.perf_counter() + dt
@@ -260,14 +290,25 @@ def runRenogyDisplay():
         
         if time.perf_counter() > nextTime:
             nextTime = nextTime + dt
-            #window['CURRENT PLOTABLE'].update(current_plotable)
-            line.set_ydata(plotables[current_plotable]) #y + np.random.random(len(t)))
+
+            line.set_ydata(plotables[current_plotable])
             fig.canvas.draw()
             fig.canvas.flush_events()
             ax.set_ylabel(current_plotable)
             ax.relim() #scale the y scale
             ax.autoscale_view() #scale the y scale
-        
+
+            now = datetime.now()
+            midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            mod = int((now - midnight).seconds) // int(60 / plot_mod)
+
+            yy = plotables[current_plotable][-min_plot_n:max_plot_n] #mod-int(60 / plot_mod):mod:1])
+            line1.set_ydata(yy)
+            fig1.canvas.draw()
+            fig1.canvas.flush_events()
+            ax1.relim() #scale the y scale
+            ax1.autoscale_view() #scale the y scale
+
         event, values = window.read(timeout=int(dt*1000))
         
         # End program if user closes window or
@@ -343,8 +384,9 @@ decoder = {
        )
 }
 
-
+connect_try = 0
 def connect(exitOnFail = True):
+    global connect_try
     coms = [
         '/dev/ttyUSB0',
         '/dev/ttyUSB1',
@@ -370,7 +412,8 @@ def connect(exitOnFail = True):
             pass
 
     if ser is None:
-        print('None of the expected COM ports were found')
+        connect_try = connect_try + 1
+        print(f'None of the expected COM ports were found : count = {connect_try}')
         if exitOnFail:
             return
     else:
@@ -420,6 +463,7 @@ def renogyDataLoop():
                     window['COM STATE'].update('USB-TTL DISCONNECTED')
                     if ser is not None:
                         ser.close()
+                    time.sleep(1)
                     ser = connect(False)
                     
             if len(line) > 0:
