@@ -163,7 +163,7 @@ power_frame = [
     sg.Column(temperature_frame, element_justification='center'),
 ]
 
-
+y = 0.0
 plotables = {
     'AMBI TEMPERATURE'      : np.full(max_plot_n, y),
     'BATTERY CAPACITY'      : np.full(max_plot_n, y),
@@ -291,18 +291,20 @@ def runRenogyDisplay():
         if time.perf_counter() > nextTime:
             nextTime = nextTime + dt
 
-            line.set_ydata(plotables[current_plotable])
+            now = datetime.now()
+            midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            mod = int((now - midnight).seconds) // int(60 / plot_mod)
+            
+            y = np.concatenate((plotables[current_plotable][mod:max_plot_n], plotables[current_plotable][0:mod]))
+
+            line.set_ydata(y)
             fig.canvas.draw()
             fig.canvas.flush_events()
             ax.set_ylabel(current_plotable)
             ax.relim() #scale the y scale
             ax.autoscale_view() #scale the y scale
 
-            now = datetime.now()
-            midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            mod = int((now - midnight).seconds) // int(60 / plot_mod)
-
-            yy = plotables[current_plotable][-min_plot_n:max_plot_n] #mod-int(60 / plot_mod):mod:1])
+            yy = y[-min_plot_n:max_plot_n] #mod-int(60 / plot_mod):mod:1])
             line1.set_ydata(yy)
             fig1.canvas.draw()
             fig1.canvas.flush_events()
