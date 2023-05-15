@@ -216,8 +216,8 @@ layout = [
     [bottom_frame]
 ]
 window = sg.Window('Renogy Link', layout, font = font_default, location=(0,0), size=window_size, keep_on_top=True).Finalize()
-#if platform.system() == 'Linux':
-#    window.Maximize()
+if platform.system() == 'Linux':
+    window.Maximize()
 
 clock_radius = int(0.5*gwidth)
 min_angle = 5
@@ -337,7 +337,7 @@ decoder = {
    0 : ("BATTERY CAPACITY", "%", 1.0),
    1 : ("BATTERY VOLTAGE", "V", 0.1),
    2 : ("CHARGING CURRENT", "A", 0.01),
-   3 : ("CTRL TEMPERATURE", "C", 1.0, "BATTERY TEMPERATURE", "C", 1.0, True),
+   3 : ("CTRL TEMPERATURE", "C", 1.0, "AMBI TEMPERATURE", "C", 1.0, True),
   35 : ("PICO TEMPERATURE", "C", 1.0),
    4 : ("LOAD VOLTAGE", "V", 0.1),
    5 : ("LOAD CURRENT", "A", 0.01),
@@ -546,6 +546,7 @@ def renogyDataLoop():
                                     elif len(value) == 7:
                                         x = int(data[k:k+2],16)
                                         x = x * value[2]
+                                        y = x
                                         if value[1] == 'C':
                                             s = f'{x:4.0f}'
                                         else:
@@ -562,7 +563,6 @@ def renogyDataLoop():
                                         element = window.find_element(value[3].strip(), silent_on_error=True)
                                         if element is not None and not isinstance(element, sg.ErrorElement):
                                             element.update(f'{s}')
-                                        y = x
                                     
                                     
                                     if value[0] in plotables:
