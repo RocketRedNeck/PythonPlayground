@@ -200,6 +200,10 @@ while (True):
                     s = sn + '<----- ' + (args.pktsize - len(sn) - 1) * '!' + '*'
                     acceptedSocket.send(str.encode(s))
 
+                except KeyboardInterrupt:
+                    print("Keyboard Interrupt Detected, Stopping Service...")
+                    sendOk= False
+                    break
                 except Exception as e:
                     print(e)
                     sendOk= False
@@ -214,6 +218,9 @@ while (True):
     except socket.timeout:
         timeoutcount += 1
         print(f"Server Detected Timeout {timeoutcount}")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt Detected, Stopping Server...")
+        break
     except Exception as e:
         print(e)
         
