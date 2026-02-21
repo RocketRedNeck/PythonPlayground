@@ -176,8 +176,8 @@ try:
                         else:
                             # Keep waiting for more data until terminator seen (indicating we have a complete 'message')
                             prefix_data = data
-                        
-                except socket.timeout:
+
+                except (socket.timeout, TimeoutError) as e:
                     print("Timeout...")
                 except KeyboardInterrupt:
                     print("Keyboard Interrupt Detected, Stopping Client...")
@@ -186,13 +186,13 @@ try:
                 except Exception as e:
                     print(e)
                     break
-        except ConnectionRefusedError:
+        except (ConnectionRefusedError, socket.timeout, TimeoutError) as e:
             if (time.time() >= conerrtime_sec):
                 conerrtime_sec = time.time() + 1.0
         except KeyboardInterrupt:
             print("Keyboard Interrupt Detected, Stopping Client...")
             done = True
-            break                
+            break
         except Exception as e:
             print(e)
 
