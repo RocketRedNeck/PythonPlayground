@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load config
-source ~/emulator.conf
+source ./emulator.conf
 
 echo "Setting up $NUM_DEVICES devices on Pi-$PI_ID..."
 
