@@ -5,39 +5,35 @@ source ./emulator.conf
 
 echo "Setting up $NUM_DEVICES devices on Pi-$PI_ID..."
 
-MGMT_BASE_IP=${MGMT_BASE_IP:-"192.168.1"}
+MGMT_BASE_IP=${MGMT_BASE_IP:-"10.1.1"}
 MGMT_PREFIX_LEN=${MGMT_PREFIX_LEN:-16}
-MGMT_GATEWAY=${MGMT_GATEWAY:-"${MGMT_BASE_IP}.1"}
-MGMT_CONN_NAME=${MGMT_CONN_NAME:-"emu-mgmt"}
-MGMT_INTERFACE=${MGMT_INTERFACE:-"$NETWORK_INTERFACE"}
+MGMT_MACVLAN_NAME=${MGMT_MACVLAN_NAME:-"mgmt"}
+MGMT_GATEWAY=${MGMT_GATEWAY:-""}
 MGMT_IP="${MGMT_BASE_IP}.$((PI_ID + 1))"
 
-# Set up management IP using NetworkManager if available
-if command -v nmcli >/dev/null 2>&1; then
-  if systemctl is-active --quiet NetworkManager; then
-    if nmcli -t -f NAME con show | grep -Fxq "$MGMT_CONN_NAME"; then
-      sudo nmcli con modify "$MGMT_CONN_NAME" \
-        connection.interface-name "$MGMT_INTERFACE" \
-        ipv4.method manual \
-        ipv4.addresses "${MGMT_IP}/${MGMT_PREFIX_LEN}"
-    else
-      sudo nmcli con add type ethernet ifname "$MGMT_INTERFACE" con-name "$MGMT_CONN_NAME" \
-        ipv4.method manual ipv4.addresses "${MGMT_IP}/${MGMT_PREFIX_LEN}"
-    fi
+# Create management macvlan interface
+echo "Setting up management interface $MGMT_MACVLAN_NAME at ${MGMT_IP}/${MGMT_PREFIX_LEN}..."
 
-    if [[ -n "$MGMT_GATEWAY" ]]; then
-      sudo nmcli con modify "$MGMT_CONN_NAME" ipv4.gateway "$MGMT_GATEWAY"
-    else
-      sudo nmcli con modify "$MGMT_CONN_NAME" ipv4.gateway ""
-    fi
+# Delete if it already exists
+sudo ip link delete "$MGMT_MACVLAN_NAME" 2>/dev/null
 
-    sudo nmcli con up "$MGMT_CONN_NAME"
-    echo "Management IP set to ${MGMT_IP}/${MGMT_PREFIX_LEN} on $MGMT_INTERFACE (connection: $MGMT_CONN_NAME)"
-  else
-    echo "NetworkManager is not active; skipping management IP setup."
-  fi
-else
-  echo "nmcli not found; skipping management IP setup."
+# Create macvlan for management
+sudo ip link add "$MGMT_MACVLAN_NAME" link "$NETWORK_INTERFACE" type macvlan mode bridge
+
+# Set MAC address for management (using MAC_VENDOR with host_octet 0)
+printf -v mgmt_mac "$MAC_VENDOR:00:00"
+sudo ip link set "$MGMT_MACVLAN_NAME" address "$mgmt_mac"
+
+# Assign IP and bring up
+sudo ip addr add "${MGMT_IP}/${MGMT_PREFIX_LEN}" dev "$MGMT_MACVLAN_NAME"
+sudo ip link set "$MGMT_MACVLAN_NAME" up
+
+echo "Management interface ready: $MGMT_MACVLAN_NAME @ MAC: $mgmt_mac @ IP: ${MGMT_IP}/${MGMT_PREFIX_LEN}"
+
+# Set default route if gateway is configured
+if [[ -n "$MGMT_GATEWAY" ]]; then
+  sudo ip route add default via "$MGMT_GATEWAY" dev "$MGMT_MACVLAN_NAME"
+  echo "Default route set via $MGMT_GATEWAY on $MGMT_MACVLAN_NAME"
 fi
 
 # Calculate IP range for this Pi
