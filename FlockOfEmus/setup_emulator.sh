@@ -6,7 +6,7 @@ source ~/emulator.conf
 echo "Setting up $NUM_DEVICES devices on Pi-$PI_ID..."
 
 # Calculate IP range for this Pi
-START_IP=$(( (PI_ID - 1) * NUM_DEVICES + 1 ))                           # Relative to base (1-32 for Pi-1, 33-64 for Pi-2, etc.)
+START_IP=$(( (PI_ID - 1) * NUM_DEVICES + 2 ))                           # Relative to base (2-33 for Pi-1, 34-65 for Pi-2, etc.)
 START_NUM=$START_IP
 END_NUM=$((START_IP + NUM_DEVICES - 1))
 
