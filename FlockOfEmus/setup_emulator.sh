@@ -6,7 +6,7 @@ source ./emulator.conf
 echo "Setting up $NUM_DEVICES devices on Pi-$PI_ID..."
 
 # Calculate IP range for this Pi
-START_IP=$(( (PI_ID - 1) * NUM_DEVICES + 2 ))                           # Relative to base (2-33 for Pi-1, 34-65 for Pi-2, etc.)
+START_IP=$(( (PI_ID - 1) * NUM_DEVICES + 1 ))                           # Relative to base (1-32 for Pi-1, 33-64 for Pi-2, etc.)
 START_NUM=$START_IP
 END_NUM=$((START_IP + NUM_DEVICES - 1))
 
@@ -35,10 +35,11 @@ sudo sysctl -w net.ipv4.conf.all.arp_announce=2
 # Clean out any of the VLANs from a previous configuration run
 echo Clearing all VLANs
 for i in $(seq $START_NUM $END_NUM); do
-  mac=$(ip link show macvlan$i | grep 'link/ether' | awk '{print $2}')
+  local_id=$((i - START_NUM + 1))
+  mac=$(ip link show macvlan$local_id | grep 'link/ether' | awk '{print $2}')
   if [[ -n "$mac" ]]; then
-    echo "CLEARING macvlan$i @ MAC: $mac @ IP: 192.168.1.$i"  
-    sudo ip link delete macvlan$i 2>/dev/null
+    echo "CLEARING macvlan$local_id @ MAC: $mac @ IP: $BASE_IP.$i"  
+    sudo ip link delete macvlan$local_id 2>/dev/null
   fi
 done
 
@@ -86,13 +87,13 @@ for i in $(seq $START_NUM $END_NUM); do
   fi
 
   mac=$(ip link show macvlan$local_id | grep 'link/ether' | awk '{print $2}')
-  echo "macvlan$local_id @ MAC: $mac @ IP: 192.168.1.$i"
+  echo "macvlan$local_id @ MAC: $mac @ IP: $full_ip"
 
   # Force an ARP ananouncement to make the device visible on the network immediately
-  sudo arping -c 2 -f -A -I $NETWORK_INTERFACE 192.168.1.$i
+  sudo arping -c 2 -f -A -I $NETWORK_INTERFACE $full_ip
 
   # Force an ARP update to ensure the IP is visible on the network immediately with the correct MAC address
-  sudo arping -c 2 -f -U -I $NETWORK_INTERFACE 192.168.1.$i
+  sudo arping -c 2 -f -U -I $NETWORK_INTERFACE $full_ip
 done
 
 wait
