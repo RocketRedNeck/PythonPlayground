@@ -159,13 +159,13 @@ def load_config_file(config_path: str | Path) -> dict[str, str]:
     
     Example file (emulator.conf):
         PI_ID=1
-        BASE_IP="192.168.1"
+        EMU_BASE_IP="192.168.1"
         NETWORK_INTERFACE="eth0"
         MAC_VENDOR="00:1C:42:${PI_ID}"
         AVAHI_ENABLED=true
     
     Returns a dict like:
-        {"PI_ID": "1", "BASE_IP": "192.168.1", ...}
+        {"PI_ID": "1", "EMU_BASE_IP": "192.168.1", ...}
     """
     config = {}
     config_path = Path(config_path)
@@ -209,7 +209,7 @@ def config_from_file(
         Configured SingleAssetConfig ready for setup_single_asset().
     
     Example:
-        # From emulator.conf with BASE_IP=192.168.1, MAC_VENDOR=00:1C:42:${PI_ID}
+        # From emulator.conf with EMU_BASE_IP=192.168.1, MAC_VENDOR=00:1C:42:${PI_ID}
         config = config_from_file("emulator.conf", host_octet=10, pi_id=1)
         # Result: SingleAssetConfig(base_ip="192.168.1", host_octet=10,
         #                           mac_vendor="00:1C:42:01", full_ip="192.168.1.10")
@@ -217,7 +217,7 @@ def config_from_file(
     conf = load_config_file(config_path)
     
     pi_id = pi_id or int(conf.get("PI_ID", "1"))
-    base_ip = conf.get("BASE_IP", "192.168.1")
+    base_ip = conf.get("EMU_BASE_IP", "192.168.1")
     network_interface = conf.get("NETWORK_INTERFACE", "eth0")
     mac_vendor = conf.get("MAC_VENDOR", "00:1C:42:01")
     avahi_enabled = conf.get("AVAHI_ENABLED", "false").lower() == "true"

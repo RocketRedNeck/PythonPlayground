@@ -1,10 +1,10 @@
 source ~/emulator.conf 2>/dev/null
 
-BASE_IP=${BASE_IP:-"192.168.1"}
+EMU_BASE_IP=${EMU_BASE_IP:-"192.168.1"}
 NETWORK_INTERFACE=${NETWORK_INTERFACE:-"eth0"}
 
 for i in $(seq 1 128); do
-  ip="$BASE_IP.$i"
+  ip="$EMU_BASE_IP.$i"
   name="device-$(printf '%03d' $i)"
 
   if ping -c 1 -W 1 "$ip" > /dev/null 2>&1; then

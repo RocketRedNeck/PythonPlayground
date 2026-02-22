@@ -5,6 +5,41 @@ source ./emulator.conf
 
 echo "Setting up $NUM_DEVICES devices on Pi-$PI_ID..."
 
+MGMT_BASE_IP=${MGMT_BASE_IP:-"192.168.1"}
+MGMT_PREFIX_LEN=${MGMT_PREFIX_LEN:-16}
+MGMT_GATEWAY=${MGMT_GATEWAY:-"${MGMT_BASE_IP}.1"}
+MGMT_CONN_NAME=${MGMT_CONN_NAME:-"emu-mgmt"}
+MGMT_INTERFACE=${MGMT_INTERFACE:-"$NETWORK_INTERFACE"}
+MGMT_IP="${MGMT_BASE_IP}.$((PI_ID + 1))"
+
+# Set up management IP using NetworkManager if available
+if command -v nmcli >/dev/null 2>&1; then
+  if systemctl is-active --quiet NetworkManager; then
+    if nmcli -t -f NAME con show | grep -Fxq "$MGMT_CONN_NAME"; then
+      sudo nmcli con modify "$MGMT_CONN_NAME" \
+        connection.interface-name "$MGMT_INTERFACE" \
+        ipv4.method manual \
+        ipv4.addresses "${MGMT_IP}/${MGMT_PREFIX_LEN}"
+    else
+      sudo nmcli con add type ethernet ifname "$MGMT_INTERFACE" con-name "$MGMT_CONN_NAME" \
+        ipv4.method manual ipv4.addresses "${MGMT_IP}/${MGMT_PREFIX_LEN}"
+    fi
+
+    if [[ -n "$MGMT_GATEWAY" ]]; then
+      sudo nmcli con modify "$MGMT_CONN_NAME" ipv4.gateway "$MGMT_GATEWAY"
+    else
+      sudo nmcli con modify "$MGMT_CONN_NAME" ipv4.gateway ""
+    fi
+
+    sudo nmcli con up "$MGMT_CONN_NAME"
+    echo "Management IP set to ${MGMT_IP}/${MGMT_PREFIX_LEN} on $MGMT_INTERFACE (connection: $MGMT_CONN_NAME)"
+  else
+    echo "NetworkManager is not active; skipping management IP setup."
+  fi
+else
+  echo "nmcli not found; skipping management IP setup."
+fi
+
 # Calculate IP range for this Pi
 START_IP=$(( (PI_ID - 1) * NUM_DEVICES + 1 ))                           # Relative to base (1-32 for Pi-1, 33-64 for Pi-2, etc.)
 START_NUM=$START_IP
@@ -38,7 +73,7 @@ for i in $(seq $START_NUM $END_NUM); do
   local_id=$((i - START_NUM + 1))
   mac=$(ip link show macvlan$local_id | grep 'link/ether' | awk '{print $2}')
   if [[ -n "$mac" ]]; then
-    echo "CLEARING macvlan$local_id @ MAC: $mac @ IP: $BASE_IP.$i"  
+    echo "CLEARING macvlan$local_id @ MAC: $mac @ IP: $EMU_BASE_IP.$i"  
     sudo ip link delete macvlan$local_id 2>/dev/null
   fi
 done
@@ -72,7 +107,7 @@ for i in $(seq $START_NUM $END_NUM); do
   sudo ip link set macvlan$local_id address $mac
 
   # Assign static IP
-  full_ip="$BASE_IP.$i"
+  full_ip="$EMU_BASE_IP.$i"
   sudo ip addr add $full_ip/16 dev macvlan$local_id
 
   # Assign to IP addresses to the VLAN MAC
@@ -97,4 +132,4 @@ for i in $(seq $START_NUM $END_NUM); do
 done
 
 wait
-echo "Setup complete: $NUM_DEVICES devices on Pi-$PI_ID (IPs: $BASE_IP.$START_NUM to $BASE_IP.$END_NUM)"
+echo "Setup complete: $NUM_DEVICES devices on Pi-$PI_ID (IPs: $EMU_BASE_IP.$START_NUM to $EMU_BASE_IP.$END_NUM)"
