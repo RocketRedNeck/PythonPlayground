@@ -1,40 +1,12 @@
 #!/bin/bash
 
+# Setup emulator macvlan devices (10.1.2.x for Pi-2, etc.)
+# Prerequisite: Run setup_management.sh first
+
 # Load config
 source ./emulator.conf
 
-echo "Setting up $NUM_DEVICES devices on Pi-$PI_ID..."
-
-MGMT_BASE_IP=${MGMT_BASE_IP:-"10.1.1"}
-MGMT_PREFIX_LEN=${MGMT_PREFIX_LEN:-16}
-MGMT_MACVLAN_NAME=${MGMT_MACVLAN_NAME:-"mgmt"}
-MGMT_GATEWAY=${MGMT_GATEWAY:-""}
-MGMT_IP="${MGMT_BASE_IP}.$((PI_ID + 1))"
-
-# Create management macvlan interface
-echo "Setting up management interface $MGMT_MACVLAN_NAME at ${MGMT_IP}/${MGMT_PREFIX_LEN}..."
-
-# Delete if it already exists
-sudo ip link delete "$MGMT_MACVLAN_NAME" 2>/dev/null
-
-# Create macvlan for management
-sudo ip link add "$MGMT_MACVLAN_NAME" link "$NETWORK_INTERFACE" type macvlan mode bridge
-
-# Set MAC address for management (using MAC_VENDOR with host_octet 0)
-printf -v mgmt_mac "$MAC_VENDOR:00:00"
-sudo ip link set "$MGMT_MACVLAN_NAME" address "$mgmt_mac"
-
-# Assign IP and bring up
-sudo ip addr add "${MGMT_IP}/${MGMT_PREFIX_LEN}" dev "$MGMT_MACVLAN_NAME"
-sudo ip link set "$MGMT_MACVLAN_NAME" up
-
-echo "Management interface ready: $MGMT_MACVLAN_NAME @ MAC: $mgmt_mac @ IP: ${MGMT_IP}/${MGMT_PREFIX_LEN}"
-
-# Set default route if gateway is configured
-if [[ -n "$MGMT_GATEWAY" ]]; then
-  sudo ip route add default via "$MGMT_GATEWAY" dev "$MGMT_MACVLAN_NAME"
-  echo "Default route set via $MGMT_GATEWAY on $MGMT_MACVLAN_NAME"
-fi
+echo "Setting up emulator devices on Pi-$PI_ID..."
 
 # Calculate IP range for this Pi
 START_IP=$(( (PI_ID - 1) * NUM_DEVICES + 1 ))                           # Relative to base (1-32 for Pi-1, 33-64 for Pi-2, etc.)
@@ -64,7 +36,7 @@ sudo sysctl -w net.ipv4.conf.all.arp_ignore=1
 sudo sysctl -w net.ipv4.conf.all.arp_announce=2
 
 # Clean out any of the VLANs from a previous configuration run
-echo Clearing all VLANs
+echo Clearing all emulator VLANs
 for i in $(seq $START_NUM $END_NUM); do
   local_id=$((i - START_NUM + 1))
   mac=$(ip link show macvlan$local_id | grep 'link/ether' | awk '{print $2}')
@@ -128,4 +100,5 @@ for i in $(seq $START_NUM $END_NUM); do
 done
 
 wait
-echo "Setup complete: $NUM_DEVICES devices on Pi-$PI_ID (IPs: $EMU_BASE_IP.$START_NUM to $EMU_BASE_IP.$END_NUM)"
+echo "Emulator setup complete: $NUM_DEVICES devices on Pi-$PI_ID (IPs: $EMU_BASE_IP.$START_NUM to $EMU_BASE_IP.$END_NUM)"
+
